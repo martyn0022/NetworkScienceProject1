@@ -24,18 +24,15 @@ dataHeader = ["type", "confName", "key", "tier", "title", "year",
 
 conferences = {}
 
-inproceedWriter = None
-proceedWriter = None
-authorWriter = None
-
 
 def ParseDBLP ():
     parser = make_parser()
     parser.setFeature(xml.sax.handler.feature_namespaces, 0)
     Handler = DBLPHandler()
     parser.setContentHandler(Handler)
-    print("PARSE")
-
+    print("PARSE1")
+    parser.parse(io.open("DataScienceDBLP.xml"))
+    '''
     with open('Inproceedings.csv', 'w', newline="", encoding='utf-8') as writeInproceed, \
             open('AuthorsInproceeding.csv', 'w', newline="", encoding='utf-8') as writeAuthor, \
             open('Proceedings.csv', 'w', newline="", encoding='utf-8') as writeProceed:
@@ -53,16 +50,18 @@ def ParseDBLP ():
     writeInproceed.close()
     writeProceed.close()
     writeAuthor.close()
-
+    '''
     return conferences
 
 
 def AddToConference (conf, authors, year, conftype):
-    print("adding conference")
-    if conf not in conferences:
-        conferences[conf] = {"authors": authors, "year": year, "tier": conferenceTier[conftype]}
-    elif conf in conferences:
-        conferences[conf]["authors"].extend(authors)
+    if year not in conferences:
+        conferences[year] = {conftype: {"author": authors, "name": conf}}
+    elif year in conferences:
+        if conftype not in conferences[year]:
+            conferences[year][conftype] = {"author": authors, "name": conf}
+        elif conftype in conferences[year]:
+            conferences[year][conftype]["author"].extend(authors)
 
 
 class DBLPHandler(ContentHandler):
@@ -124,12 +123,12 @@ class DBLPHandler(ContentHandler):
 
         # end of publication
         if tag == self.currentPublicationType and self.currentTypeOfConf in conferencesName:
+            '''
             if self.currentPublicationType == "proceedings":
-                print("hi")
                 conf = conferencesName[self.currentTypeOfConf] + " " + self.currPublicationData["year"]
                 self.WriteAsProceedings(conf)
-
-            elif self.currentPublicationType == "inproceedings" or self.currentPublicationType == "article":
+            '''
+            if self.currentPublicationType == "inproceedings" or self.currentPublicationType == "article":
                 self.WriteAsInproceedings()
 
             self.resetTemporaryVariables()
@@ -144,6 +143,7 @@ class DBLPHandler(ContentHandler):
         self.isPublication = False
         self.currentTypeOfConf = ""
 
+    '''
     def WriteAsProceedings (self, conf):
         publicationTitle = self.currPublicationData["title"].lower()
         if self.currentTypeOfConf == "sigmod":
@@ -223,7 +223,7 @@ class DBLPHandler(ContentHandler):
                 if re.search("(workshop|tutorial)", publicationTitle) is None:
                     self.currPublicationData.update({"confName": conf})
                     proceedWriter.writerow(self.currPublicationData)
-
+    '''
     def WriteAsInproceedings (self):
         year = self.currPublicationData["year"]
         conf = conferencesName[self.currentTypeOfConf] + " " + year
@@ -233,7 +233,9 @@ class DBLPHandler(ContentHandler):
         writeBool = False
 
         if self.currentPublicationType == "inproceedings":
-            if re.search("^conf/[a-z]+/[0-9]{2,4}(/-[1-3])?$", crossref):
+            if re.search("^conf/[a-z]+/[0-9]{2,4}(-[1-3])?$", crossref):
+                if self.currentTypeOfConf == "sigmod":
+                    print(self.currPublicationData["year"])
                 writeBool = True
         elif self.currentPublicationType == "article":
             if re.search("^journals/pvldb/[a-zA-Z0-9]+$", key):
@@ -243,7 +245,7 @@ class DBLPHandler(ContentHandler):
             self.currPublicationData.update({"confName": conf})
             for author in self.currPublicationAuthors:
                 authors.append(author)
-                authorWriter.writerow([conf, author.replace("\n", "")])
+                # authorWriter.writerow([conf, author.replace("\n", "")])
             # store inproceeding/articles
-            inproceedWriter.writerow(self.currPublicationData)
-            AddToConference(conf, authors, year, self.currConferenceType)
+            # inproceedWriter.writerow(self.currPublicationData)
+            AddToConference(conf, authors, year, self.currentTypeOfConf)

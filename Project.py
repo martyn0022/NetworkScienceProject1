@@ -4,7 +4,8 @@ import NetworkGraph as ng
 
 def main ():
     conf = parser.ParseDBLP()
-    ng.initialize(conf)
+    network = ng.Network(conf)
+    network.DrawGraph()
 
 
 if __name__ == "__main__":
