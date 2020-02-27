@@ -6,7 +6,6 @@ import io
 import csv
 import re
 import config as cfg
-import networkx
 
 conferenceTier = cfg.conferenceTier
 conferencesName = cfg.conferencesName
@@ -25,8 +24,41 @@ dataHeader = ["type", "confName", "key", "tier", "title", "year",
 
 conferences = {}
 
+inproceedWriter = None
+proceedWriter = None
+authorWriter = None
+
+
+def ParseDBLP ():
+    parser = make_parser()
+    parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+    Handler = DBLPHandler()
+    parser.setContentHandler(Handler)
+    print("PARSE")
+
+    with open('Inproceedings.csv', 'w', newline="", encoding='utf-8') as writeInproceed, \
+            open('AuthorsInproceeding.csv', 'w', newline="", encoding='utf-8') as writeAuthor, \
+            open('Proceedings.csv', 'w', newline="", encoding='utf-8') as writeProceed:
+        inproceedWriter = csv.DictWriter(writeInproceed, fieldnames=dataHeader)
+        inproceedWriter.writeheader()
+
+        proceedWriter = csv.DictWriter(writeProceed, fieldnames=dataHeader)
+        proceedWriter.writeheader()
+
+        authorWriter = csv.writer(writeAuthor)
+        authorWriter.writerow(["conference", "author"])
+
+        parser.parse(io.open("DataScienceDBLP.xml"))
+
+    writeInproceed.close()
+    writeProceed.close()
+    writeAuthor.close()
+
+    return conferences
+
 
 def AddToConference (conf, authors, year, conftype):
+    print("adding conference")
     if conf not in conferences:
         conferences[conf] = {"authors": authors, "year": year, "tier": conferenceTier[conftype]}
     elif conf in conferences:
@@ -43,7 +75,6 @@ class DBLPHandler(ContentHandler):
     isPublication = False
 
     # publication content, use for temporary storage per publication
-    currConferenceType = ""
     currPublicationAuthors = []
     currPublicationData = {"type": "NULL", "confName": "NULL", "key": "NULL", "tier": "NULL",
                            "title": "NULL", "year": "NULL",
@@ -67,7 +98,6 @@ class DBLPHandler(ContentHandler):
                     self.currPublicationData.update({"tier": conferenceTier[self.currentTypeOfConf]})
                 self.currPublicationData.update({"key": value})
                 self.currPublicationData.update({"type": tag})
-                self.currConferenceType = valueArray[1].lower()
 
         # if inside a publication
         elif self.isPublication:
@@ -95,6 +125,7 @@ class DBLPHandler(ContentHandler):
         # end of publication
         if tag == self.currentPublicationType and self.currentTypeOfConf in conferencesName:
             if self.currentPublicationType == "proceedings":
+                print("hi")
                 conf = conferencesName[self.currentTypeOfConf] + " " + self.currPublicationData["year"]
                 self.WriteAsProceedings(conf)
 
@@ -216,30 +247,3 @@ class DBLPHandler(ContentHandler):
             # store inproceeding/articles
             inproceedWriter.writerow(self.currPublicationData)
             AddToConference(conf, authors, year, self.currConferenceType)
-
-
-if __name__ == "__main__":
-    parser = make_parser()
-    parser.setFeature(xml.sax.handler.feature_namespaces, 0)
-    Handler = DBLPHandler()
-    parser.setContentHandler(Handler)
-
-    with open('Inproceedings.csv', 'w', newline="", encoding='utf-8') as writeInproceed, \
-            open('AuthorsInproceeding.csv', 'w', newline="", encoding='utf-8') as writeAuthor, \
-            open('Proceedings.csv', 'w', newline="", encoding='utf-8') as writeProceed:
-        inproceedWriter = csv.DictWriter(writeInproceed, fieldnames=dataHeader)
-        inproceedWriter.writeheader()
-
-        proceedWriter = csv.DictWriter(writeProceed, fieldnames=dataHeader)
-        proceedWriter.writeheader()
-
-        authorWriter = csv.writer(writeAuthor)
-        authorWriter.writerow(["conference", "author"])
-
-        parser.parse(io.open("DataScienceDBLP.xml"))
-
-    writeInproceed.close()
-    writeProceed.close()
-    writeAuthor.close()
-
-    print(conferences)
