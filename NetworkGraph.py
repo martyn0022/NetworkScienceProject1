@@ -15,14 +15,18 @@ class Network:
         nx.draw(self.graph)
         plt.savefig("test.png")
 
+    # add range to filter
     def AddNodesToNetwork (self):
-        nodes = self.FilterNodes(2015)
+        nodes = self.FilterNodes(2000)
         self.graph.add_nodes_from(nodes)
 
-    def FilterNodes (self, year):
+    def addEdgesToNetwork(self):
+        return
+
+    def FilterNodes (self, yearfilter):
         conferenceNodes = []
-        print(len(self.conferenceDetails[str(year)]))
-        for conf in self.conferenceDetails[str(year)].items():
-            conferenceNodes.append(conf[1]["name"])
+        for key, value in self.conferenceDetails.items():
+            if int(value['year']) == yearfilter:
+                conferenceNodes.append(key)
         print(conferenceNodes)
         return conferenceNodes
