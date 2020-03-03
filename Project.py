@@ -7,7 +7,7 @@ dblpFilename = "DataScienceDBLP.xml"
 
 
 def main ():
-    # uncomment line below to re-preprocess dblp
+    # uncomment line below to preprocess dblp.xml again
     # ps.PreprocessConferencesAuthors(dblpFilename, conferenceAuthorJSON)
     conferences = ParseJSONtoDict(conferenceAuthorJSON)
     network = ng.Network(conferences)
