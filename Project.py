@@ -2,7 +2,7 @@ import XMLParser as ps
 import NetworkGraph as ng
 import json
 
-conferenceAuthorJSON = "conferencesAndAuthors.json"
+conferenceAuthorJSON = "json/conferencesAndAuthors.json"
 dblpFilename = "DataScienceDBLP.xml"
 
 

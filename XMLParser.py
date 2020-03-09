@@ -39,7 +39,7 @@ def PreprocessConferencesAuthors (dblpFileName, JSONFilename):
     with open(JSONFilename, 'w') as json_file:
         json.dump(conferences, json_file)
 
-    with open("authors.json", 'w') as json_file:
+    with open("json/authors.json", 'w') as json_file:
         json.dump(authorsList, json_file)
 
     print("done parsing")
