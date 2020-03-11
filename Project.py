@@ -16,7 +16,7 @@ def main ():
     # network.SaveNodesandEdges()
     # network.CreateDiGraphConf(2000,2005)
     network.CreateAuthGraph()
-    network.CreateSubAuthGraph(2001,2001)
+    # network.CreateSubAuthGraph(2001,2001)
 
 
 if __name__ == "__main__":
