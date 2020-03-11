@@ -11,13 +11,11 @@ listOfJSON = [conferenceAuthorJSON, authorJSON, inproceedsJSON]
 def main ():
     # uncomment line below to preprocess dblp.xml again
     # ps.PreprocessConferencesAuthors(dblpFilename, listOfJSON)
-    network = ng.Network(listOfJSON)
-    # network.DrawGraph()
 
-    # network.CreateConfNetwork()
-    # network.CreateAuthNetwork()
+    network = ng.Network(listOfJSON)
+    # network.SaveNodesandEdges()
     network.DrawDiGraphConf(2000,2005)
-    network.DrawGraphAuth(2000,2005)
+    # network.DrawGraphAuth()
 
 
 if __name__ == "__main__":

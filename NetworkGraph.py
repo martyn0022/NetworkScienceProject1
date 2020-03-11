@@ -28,6 +28,7 @@ class Network:
         # conferences are the nodes
         self.graph = nx.Graph()
         self.diGraph = nx.DiGraph()
+        self.authGraph = nx.Graph()
 
     # def DrawGraph (self):
     #     maxW, minW, maxE, minE = self.AddNodesToNetwork()
@@ -107,7 +108,12 @@ class Network:
     #     # print(conferenceNodes)
     #     return conferenceNodes
 
-    def CreateConfNetwork (self):
+    def SaveNodesandEdges (self):
+        self.CreateConfNodesEdges()
+        self.CreateAuthNodesEdges()
+
+
+    def CreateConfNodesEdges (self):
         conferenceNodes = []
         for key, value in self.conferenceDetails.items():
             conferenceNodes.append((key, int(value['year']), value['conftype'],
@@ -154,7 +160,7 @@ class Network:
 
         SaveNodesEdgesinJSON(confNodeAttr, confEdge,'conference')
 
-    def CreateAuthNetwork (self):
+    def CreateAuthNodesEdges (self):
         authNodes = []
         authEdges = []
         authNodes = self.authors
@@ -167,6 +173,22 @@ class Network:
 
         list(set(authEdges))
         SaveNodesEdgesinJSON(authNodes, authEdges,'author')
+
+
+    def CreateConfDiGraph(self):
+        nodesJSON = 'json/conferenceNodes.json'
+        edgesJSON = 'json/conferenceEdges.json'
+        if nodesJSON:
+            with open(nodesJSON, 'r') as f:
+                nodes = json.load(f)
+        if edgesJSON:
+            with open(edgesJSON, 'r') as f:
+                edges = json.load(f)
+
+        self.diGraph.add_nodes_from(nodes)
+        self.diGraph.add_weighted_edges_from(edges)
+        print(self.diGraph.get_edge_data())
+
 
 
     def DrawDiGraphConf(self, start, end):
@@ -198,7 +220,6 @@ class Network:
 
         self.diGraph.add_nodes_from(nodeslist)
         self.diGraph.add_weighted_edges_from(edgeslist)
-
 
         nodesize = list(nodessize.values())
         maxSize = max(nodesize)
@@ -250,8 +271,7 @@ class Network:
         plt.savefig("conferenceNW.png")
 
 
-    def DrawGraphAuth(self, start, end):
-        graph = nx.Graph()
+    def CreateAuthGraph(self, start, end):
         nodesJSON = 'json/authorNodes.json'
         edgesJSON = 'json/authorEdges.json'
         if nodesJSON:
@@ -261,16 +281,10 @@ class Network:
             with open(edgesJSON, 'r') as f:
                 edges = json.load(f)
 
-        nodeslist = []
-        nodessize = {}
-        edgeslist = []
-        edgecolors = []
-
-        graph.add_nodes_from(nodes)
-        graph.add_edges_from(edges)
+        self.authGraph.add_nodes_from(nodes)
+        self.authGraph.add_edges_from(edges)
 
         # print(graph.degree)
-
         # graph too large to be drawn, but algorithms based on degree etc, can be done
 
 
