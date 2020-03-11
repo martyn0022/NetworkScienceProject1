@@ -1,4 +1,6 @@
 # requires installation
+import collections
+
 import networkx as nx
 import matplotlib.pyplot as plt
 import json
@@ -288,6 +290,23 @@ class Network:
         maxDegree = max(self.authGraph.degree, key=lambda x: x[1])[1]
         minDegree = min(self.authGraph.degree, key=lambda x: x[1])[1]
 
+        degree_sequence = sorted([d for n, d in self.authGraph.degree()], reverse=True)
+        degreeCount = collections.Counter(degree_sequence)
+        deg, cnt = zip(*degreeCount.items())
+
+
+        plt.figure()
+        ax = plt.gca()
+        ax.scatter(deg, cnt, c="r")
+        
+        plt.title("Author Degree Distribution")
+        plt.ylabel("Count")
+        plt.xlabel("Degree")
+
+        # ax.set(xscale="log")
+        ax.set(yscale="log")
+
+        plt.savefig("AuthorDegreeDistribution.png")
         # graph too large to be drawn, but algorithms based on degree etc, can be done
 
 
@@ -297,20 +316,40 @@ class Network:
         edgelist = set()
 
         for edge in self.authGraph.edges:
-            if self.authGraph[edge[0]][edge[1]]['year'] in list(range(startyear, endyear+1)):
+            if self.authGraph[edge[0]][edge[1]]['year'] in list(range(startyear, endyear+1))\
+                    and self.authGraph[edge[0]][edge[1]]['tier'] == 3:
                 edgelist.add(edge)
                 nodelist.add(edge[0])
                 nodelist.add(edge[1])
 
         subgraph.add_nodes_from(nodelist)
         subgraph.add_edges_from(edgelist)
-        print('# of nodes: ', len(subgraph.nodes))
-        print('# of edges: ', len(subgraph.edges))
 
         maxDegree = max(subgraph.degree, key=lambda x: x[1])[1]
         minDegree = min(subgraph.degree, key=lambda x: x[1])[1]
 
-        print('kMax: ', maxDegree)
-        print('kMin: ', minDegree)
+
+    def AuthorsReputation(self):
+        authNodes = []
+        authEdges = []
+        authorsTier1 = []
+        count = 0
+
+        for author, publications in self.authors.items():
+            count = 0
+            authNodes.append((author, {'size': len(publications)}))
+            for publ in publications:
+                if publ['tier'] == 3:
+                    count += 1
+                authorsTier1.append((author, count))
+
+        for key, value in self.inproceeds.items():
+            authors = value['authors']
+            for author1 in authors:
+                for author2 in authors:
+                    if author1 != author2:
+                        authEdges.append((author1,author2, {'tier': int(value['tier']), 'year':int(value['year'])}))
+
+
 
 
