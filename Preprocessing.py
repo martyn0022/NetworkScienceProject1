@@ -7,6 +7,7 @@ import csv
 import re
 import config as cfg
 import json
+import pandas as pd
 
 conferenceTier = cfg.conferenceTier
 conferencesName = cfg.conferencesName
@@ -25,10 +26,11 @@ dataHeader = ["publtype", "conftype", "confName", "key", "tier", "title", "year"
 
 dictionary = {}
 conferences = {}
+inproceeds = {}
 authorsList = []
 
 
-def PreprocessConferencesAuthors (dblpFileName, JSONFilename):
+def PreprocessConferencesAuthors (dblpFileName, JSONList):
     parser = make_parser()
     parser.setFeature(xml.sax.handler.feature_namespaces, 0)
     Handler = DBLPHandler()
@@ -36,17 +38,21 @@ def PreprocessConferencesAuthors (dblpFileName, JSONFilename):
     print("PARSE1")
     parser.parse(io.open(dblpFileName))
 
-    with open(JSONFilename, 'w') as json_file:
+    with open(JSONList[0], 'w') as json_file:
         json.dump(conferences, json_file)
 
-    with open("json/authors.json", 'w') as json_file:
+    with open(JSONList[1], 'w') as json_file:
         json.dump(authorsList, json_file)
+
+    with open(JSONList[2], 'w') as json_file:
+        json.dump(inproceeds, json_file)
 
     print("done parsing")
     return conferences
 
 
-def AddToConference (key, conftype, year, tier, authors):
+def AddToConference (key, conftype, year, tier, publauthors):
+    authors = publauthors.copy()
     if key not in conferences:
         conferences[key] = {'conftype': conftype, 'year': year, 'tier': tier, 'authors': authors}
     elif key in conferences:
@@ -56,12 +62,20 @@ def AddToConference (key, conftype, year, tier, authors):
             authorsList.append(author)
 
 
-def WriteAsInproceedings (publicationData, confType, publicationAuthors):
+def AddToInproceeds (key, crossref, conftype, year, tier, publauthors):
+    authors = publauthors.copy()
+    if key not in inproceeds:
+        inproceeds[key] = {'conf':crossref, 'conftype':conftype, 'year':year, 'tier':tier, 'authors':authors}
+
+
+
+def AddToData (publicationData, confType, publicationAuthors):
+    conftype = confType
+    tier = publicationData["tier"]
     year = publicationData["year"]
     confname = conferencesName[confType] + " " + year
     crossref = publicationData["crossref"].lower()
     key = publicationData["key"].lower()
-    authors = []
     conferencekey = publicationData["conftype"] + publicationData["year"]
     writeBool = False
 
@@ -74,41 +88,8 @@ def WriteAsInproceedings (publicationData, confType, publicationAuthors):
 
     if writeBool:
         publicationData.update({"confName": confname})
-        for author in publicationAuthors:
-            authors.append(author)
-            # authorWriter.writerow([confname, author.replace("\n", "")])
-        # store inproceeding/articles
-        # inproceedWriter.writerow(publicationData)
-        AddToConference(conferencekey, publicationData["conftype"], year, publicationData["tier"], authors)
-
-
-class CSVWriter:
-    def __init__ (self):
-        self.inproceedWriter = None
-        self.proceedWriter = None
-        self.authorWriter = None
-        self.writeInproceed = None
-        self.writeAuthor = None
-        self.writeProceed = None
-
-    def OpenCSVWriter (self):
-        with open('Inproceedings.csv', 'w', newline="", encoding='utf-8') as self.writeInproceed, \
-                open('AuthorsInproceeding.csv', 'w', newline="", encoding='utf-8') as self.writeAuthor, \
-                open('Proceedings.csv', 'w', newline="", encoding='utf-8') as self.writeProceed:
-            self.inproceedWriter = csv.DictWriter(self.writeInproceed, fieldnames=dataHeader)
-            self.inproceedWriter.writeheader()
-
-            self.proceedWriter = csv.DictWriter(self.writeProceed, fieldnames=dataHeader)
-            self.proceedWriter.writeheader()
-
-            self.authorWriter = csv.writer(self.writeAuthor)
-            self.authorWriter.writerow(["conference", "author"])
-        return self.inproceedWriter, self.proceedWriter, self.authorWriter
-
-    def CloseCSVWriter (self):
-        self.writeInproceed.close()
-        self.writeAuthor.close()
-        self.writeProceed.close()
+        AddToInproceeds(key, conferencekey, conftype, year, tier, publicationAuthors)
+        AddToConference(conferencekey, conftype, year, tier, publicationAuthors)
 
 
 class DBLPHandler(ContentHandler):
@@ -174,15 +155,10 @@ class DBLPHandler(ContentHandler):
         self.listOfContent = ""
 
         # end of publication, i.e. found </proceedings>
-        if tag == self.currentPublicationType and self.currentTypeOfConf in conferencesName:
-            '''
-            if self.currentPublicationType == "proceedings":
-                conf = conferencesName[self.currentTypeOfConf] + " " + self.currPublicationData["year"]
-                self.WriteAsProceedings(conf)
-            '''
-            if self.currentPublicationType == "inproceedings" or self.currentPublicationType == "article":
-                WriteAsInproceedings(self.currPublicationData, self.currentTypeOfConf, self.currPublicationAuthors)
-
+        if tag == self.currentPublicationType:
+            if self.currentTypeOfConf in conferencesName:
+                if self.currentPublicationType == "inproceedings" or self.currentPublicationType == "article":
+                    AddToData(self.currPublicationData, self.currentTypeOfConf, self.currPublicationAuthors)
             self.resetTemporaryVariables()
 
         # end of dblp
@@ -191,7 +167,7 @@ class DBLPHandler(ContentHandler):
 
     # reset variables after every end of publication
     def resetTemporaryVariables (self):
-        self.currPublicationAuthors.clear()
+        self.currPublicationAuthors = []
         self.currPublicationData = {"publtype": "NULL", "confName": "NULL", "key": "NULL", "tier": "NULL",
                                     "title": "NULL", "year": "NULL",
                                     "booktitle": "NULL", "volume": "NULL", "journal": "NULL",
@@ -280,3 +256,30 @@ class DBLPHandler(ContentHandler):
                     self.currPublicationData.update({"confName": conf})
                     proceedWriter.writerow(self.currPublicationData)
     '''
+class CSVWriter:
+    def __init__ (self):
+        self.inproceedWriter = None
+        self.proceedWriter = None
+        self.authorWriter = None
+        self.writeInproceed = None
+        self.writeAuthor = None
+        self.writeProceed = None
+
+    def OpenCSVWriter (self):
+        with open('Inproceedings.csv', 'w', newline="", encoding='utf-8') as self.writeInproceed, \
+                open('AuthorsInproceeding.csv', 'w', newline="", encoding='utf-8') as self.writeAuthor, \
+                open('Proceedings.csv', 'w', newline="", encoding='utf-8') as self.writeProceed:
+            self.inproceedWriter = csv.DictWriter(self.writeInproceed, fieldnames=dataHeader)
+            self.inproceedWriter.writeheader()
+
+            self.proceedWriter = csv.DictWriter(self.writeProceed, fieldnames=dataHeader)
+            self.proceedWriter.writeheader()
+
+            self.authorWriter = csv.writer(self.writeAuthor)
+            self.authorWriter.writerow(["conference", "author"])
+        return self.inproceedWriter, self.proceedWriter, self.authorWriter
+
+    def CloseCSVWriter (self):
+        self.writeInproceed.close()
+        self.writeAuthor.close()
+        self.writeProceed.close()

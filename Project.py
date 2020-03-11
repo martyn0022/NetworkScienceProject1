@@ -1,25 +1,22 @@
 import Preprocessing as ps
 import NetworkGraph as ng
-import json
 
 conferenceAuthorJSON = "json/conferencesAndAuthors.json"
+authorJSON = "json/authors.json"
+inproceedsJSON = 'json/inproceeds.json'
 dblpFilename = "DataScienceDBLP.xml"
+listOfJSON = [conferenceAuthorJSON, authorJSON, inproceedsJSON]
 
 
 def main ():
     # uncomment line below to preprocess dblp.xml again
-    # ps.PreprocessConferencesAuthors(dblpFilename, conferenceAuthorJSON)
-    conferences = ParseJSONtoDict(conferenceAuthorJSON)
-    network = ng.Network(conferences)
-    network.DrawGraph()
+    # ps.PreprocessConferencesAuthors(dblpFilename, listOfJSON)
+    network = ng.Network(listOfJSON)
+    # network.DrawGraph()
 
-
-def ParseJSONtoDict (filename):
-    # Read JSON data into the datastore variable
-    if filename:
-        with open(filename, 'r') as f:
-            datastore = json.load(f)
-    return datastore
+    network.CreateConfNetwork()
+    # network.CreateAuthNetwork()
+    network.DrawDiGraphConf(2000,2005)
 
 
 if __name__ == "__main__":
