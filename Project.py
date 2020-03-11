@@ -14,8 +14,9 @@ def main ():
 
     network = ng.Network(listOfJSON)
     # network.SaveNodesandEdges()
-    network.DrawDiGraphConf(2000,2005)
-    # network.DrawGraphAuth()
+    # network.CreateDiGraphConf(2000,2005)
+    network.CreateAuthGraph()
+    network.CreateSubAuthGraph(2001,2001)
 
 
 if __name__ == "__main__":

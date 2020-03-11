@@ -163,15 +163,17 @@ class Network:
     def CreateAuthNodesEdges (self):
         authNodes = []
         authEdges = []
-        authNodes = self.authors
+
+        for key, value in self.authors.items():
+            authNodes.append((key, {'size': len(value)}))
+
         for key, value in self.inproceeds.items():
             authors = value['authors']
             for author1 in authors:
                 for author2 in authors:
                     if author1 != author2:
-                        authEdges.append((author1,author2))
+                        authEdges.append((author1,author2, {'tier': int(value['tier']), 'year':int(value['year'])}))
 
-        list(set(authEdges))
         SaveNodesEdgesinJSON(authNodes, authEdges,'author')
 
 
@@ -270,7 +272,7 @@ class Network:
         plt.savefig("conferenceNW.png")
 
 
-    def CreateAuthGraph(self, start, end):
+    def CreateAuthGraph(self):
         nodesJSON = 'json/authorNodes.json'
         edgesJSON = 'json/authorEdges.json'
         if nodesJSON:
@@ -283,8 +285,32 @@ class Network:
         self.authGraph.add_nodes_from(nodes)
         self.authGraph.add_edges_from(edges)
 
-        # print(graph.degree)
+        maxDegree = max(self.authGraph.degree, key=lambda x: x[1])[1]
+        minDegree = min(self.authGraph.degree, key=lambda x: x[1])[1]
+
         # graph too large to be drawn, but algorithms based on degree etc, can be done
 
+
+    def CreateSubAuthGraph(self, startyear, endyear):
+        subgraph = nx.Graph()
+        nodelist = set()
+        edgelist = set()
+
+        for edge in self.authGraph.edges:
+            if self.authGraph[edge[0]][edge[1]]['year'] in list(range(startyear, endyear+1)):
+                edgelist.add(edge)
+                nodelist.add(edge[0])
+                nodelist.add(edge[1])
+
+        subgraph.add_nodes_from(nodelist)
+        subgraph.add_edges_from(edgelist)
+        print('# of nodes: ', len(subgraph.nodes))
+        print('# of edges: ', len(subgraph.edges))
+
+        maxDegree = max(subgraph.degree, key=lambda x: x[1])[1]
+        minDegree = min(subgraph.degree, key=lambda x: x[1])[1]
+
+        print('kMax: ', maxDegree)
+        print('kMin: ', minDegree)
 
 

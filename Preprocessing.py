@@ -27,7 +27,7 @@ dataHeader = ["publtype", "conftype", "confName", "key", "tier", "title", "year"
 dictionary = {}
 conferences = {}
 inproceeds = {}
-authorsList = []
+authorsList = {}
 
 
 def PreprocessConferencesAuthors (dblpFileName, JSONList):
@@ -54,18 +54,20 @@ def PreprocessConferencesAuthors (dblpFileName, JSONList):
 def AddToConference (key, conftype, year, tier, publauthors):
     authors = publauthors.copy()
     if key not in conferences:
-        conferences[key] = {'conftype': conftype, 'year': year, 'tier': tier, 'authors': authors}
+        conferences[key] = {'key': key, 'conftype': conftype, 'year': year, 'tier': tier, 'authors': authors}
     elif key in conferences:
         conferences[key]['authors'].extend(authors)
-    for author in authors:
-        if author not in authorsList:
-            authorsList.append(author)
 
 
 def AddToInproceeds (key, crossref, conftype, year, tier, publauthors):
     authors = publauthors.copy()
     if key not in inproceeds:
-        inproceeds[key] = {'conf':crossref, 'conftype':conftype, 'year':year, 'tier':tier, 'authors':authors}
+        inproceeds[key] = {'key': key, 'conf':crossref, 'conftype':conftype, 'year':year, 'tier':tier, 'authors':authors}
+        for author in authors:
+            if author not in authorsList:
+                authorsList[author] = [inproceeds[key]]
+            else:
+                authorsList[author].append(inproceeds[key])
 
 
 
