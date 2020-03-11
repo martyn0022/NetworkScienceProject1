@@ -187,7 +187,6 @@ class Network:
 
         self.diGraph.add_nodes_from(nodes)
         self.diGraph.add_weighted_edges_from(edges)
-        print(self.diGraph.get_edge_data())
 
 
 
