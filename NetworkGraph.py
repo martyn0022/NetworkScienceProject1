@@ -1,5 +1,7 @@
 # requires installation
 import collections
+from operator import itemgetter
+import numpy as np
 
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -162,22 +164,6 @@ class Network:
 
         SaveNodesEdgesinJSON(confNodeAttr, confEdge,'conference')
 
-    def CreateAuthNodesEdges (self):
-        authNodes = []
-        authEdges = []
-
-        for key, value in self.authors.items():
-            authNodes.append((key, {'size': len(value)}))
-
-        for key, value in self.inproceeds.items():
-            authors = value['authors']
-            for author1 in authors:
-                for author2 in authors:
-                    if author1 != author2:
-                        authEdges.append((author1,author2, {'tier': int(value['tier']), 'year':int(value['year'])}))
-
-        SaveNodesEdgesinJSON(authNodes, authEdges,'author')
-
 
     def CreateConfDiGraph(self):
         nodesJSON = 'json/conferenceNodes.json'
@@ -274,6 +260,39 @@ class Network:
         plt.savefig("conferenceNW.png")
 
 
+    def CreateAuthNodesEdges (self):
+        authNodes = []
+        authEdges = []
+
+        for author, publications in self.authors.items():
+            tier3cnt = 0
+            publications.sort(key=itemgetter('year'))
+            prevPubl = None
+            success = 0
+            maxSuccess = 0
+            for publ in publications:
+                if publ['tier'] == 3:
+                    if prevPubl is not None:
+                        if (int(publ['year']) - int(prevPubl['year'])) == 1:
+                            print("hi")
+                            success += 1
+                        elif (int(publ['year']) - int(prevPubl['year'])) > 1:
+                            maxSuccess = success
+                            success = 0
+                    tier3cnt += 1
+                    prevPubl = publ
+            authNodes.append((author, {'size': len(publications), 'success': maxSuccess, 'tier3cnt': tier3cnt}))
+
+        for key, publ in self.inproceeds.items():
+            authors = publ['authors']
+            for author1 in authors:
+                for author2 in authors:
+                    if author1 != author2:
+                        authEdges.append((author1,author2, {'tier': int(publ['tier']), 'year':int(publ['year'])}))
+
+        SaveNodesEdgesinJSON(authNodes, authEdges,'author')
+
+
     def CreateAuthGraph(self):
         nodesJSON = 'json/authorNodes.json'
         edgesJSON = 'json/authorEdges.json'
@@ -293,21 +312,51 @@ class Network:
         degree_sequence = sorted([d for n, d in self.authGraph.degree()], reverse=True)
         degreeCount = collections.Counter(degree_sequence)
         deg, cnt = zip(*degreeCount.items())
-
-
-        plt.figure()
         ax = plt.gca()
         ax.scatter(deg, cnt, c="r")
-        
         plt.title("Author Degree Distribution")
         plt.ylabel("Count")
         plt.xlabel("Degree")
-
         # ax.set(xscale="log")
         ax.set(yscale="log")
-
         plt.savefig("AuthorDegreeDistribution.png")
         # graph too large to be drawn, but algorithms based on degree etc, can be done
+
+        plt.close
+        ax = plt.gca()
+        success = nx.get_node_attributes(self.authGraph, 'success')
+        deg = []
+        suc = []
+        for auth, scnt in success.items():
+            deg.append(self.authGraph.degree(auth))
+            suc.append(scnt)
+        ax.scatter(deg, suc, c="r", alpha=0.2)
+        plt.title("Author Success vs. Degree")
+        plt.ylabel("Success")
+        plt.xlabel("Degree")
+        # plt.axis([-1, max(deg)+100, -1, max(suc)+2])
+        plt.yticks([i for i in range(max(suc)+1)])
+        plt.xticks([i for i in range(0, max(deg)+20, 20)])
+
+        plt.savefig("AuthorSuccessDegree.png")
+
+        plt.close
+        success_seq = sorted([scnt for auth, scnt in success.items()], reverse=True)
+        successcnt = collections.Counter(success_seq)
+        suc, cnt = zip(*successcnt.items())
+
+        plt.figure()
+        ax = plt.gca()
+        ax.scatter(suc, cnt, c="r")
+        plt.title("Author Success Distribution")
+        plt.ylabel("Number of Authors")
+        plt.xlabel("Success")
+        # ax.set(xscale="log")
+        ax.set(yscale="log")
+        plt.xticks([i for i in range(max(suc)+1)])
+        plt.savefig("AuthorSuccessDistribution.png")
+        # graph too large to be drawn, but algorithms based on degree etc, can be done
+
 
 
     def CreateSubAuthGraph(self, startyear, endyear):
@@ -329,26 +378,6 @@ class Network:
         minDegree = min(subgraph.degree, key=lambda x: x[1])[1]
 
 
-    def AuthorsReputation(self):
-        authNodes = []
-        authEdges = []
-        authorsTier1 = []
-        count = 0
-
-        for author, publications in self.authors.items():
-            count = 0
-            authNodes.append((author, {'size': len(publications)}))
-            for publ in publications:
-                if publ['tier'] == 3:
-                    count += 1
-                authorsTier1.append((author, count))
-
-        for key, value in self.inproceeds.items():
-            authors = value['authors']
-            for author1 in authors:
-                for author2 in authors:
-                    if author1 != author2:
-                        authEdges.append((author1,author2, {'tier': int(value['tier']), 'year':int(value['year'])}))
 
 
 
