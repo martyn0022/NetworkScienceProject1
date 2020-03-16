@@ -7,7 +7,8 @@ import csv
 import re
 import config as cfg
 import json
-import pandas as pd
+import collections
+from operator import itemgetter
 
 conferenceTier = cfg.conferenceTier
 conferencesName = cfg.conferencesName
@@ -49,6 +50,122 @@ def PreprocessConferencesAuthors (dblpFileName, JSONList):
 
     print("done parsing")
     return conferences
+
+
+def CreateNetworks():
+    conferenceInfo = ParseJSONtoDict("json/conferencesAndAuthors.json")
+    authorInfo = ParseJSONtoDict("json/authors.json")
+    inproceedsInfo = ParseJSONtoDict('json/inproceeds.json')
+    print(len(conferenceInfo))
+    print(len(authorInfo))
+    print(len(inproceedsInfo))
+
+    CreateConferenceNetwork(conferenceInfo)
+    print('done conf')
+    CreateAuthorNetwork(authorInfo, inproceedsInfo)
+    print('done auth')
+
+
+def CreateConferenceNetwork (conferenceInfo):
+    conferenceNodes = []
+    confNodeAttr = []
+    confEdges = []
+    maxWeight = 0
+    minWeight = 1000
+    maxEdge = 0
+    minEdge = 1000
+
+    for key, value in conferenceInfo.items():
+        conferenceNodes.append((key, int(value['year']), value['conftype'],
+                                int(value['tier']), len(value['authors'])))
+
+    for key1 in conferenceNodes:
+        conf1 = key1[0]
+        conf1year = key1[1]
+        nodeWeight = 0
+
+        confNodeAttr.append((conf1, {'size': key1[4], 'tier': key1[3],
+                                     'authors': conferenceInfo[conf1]['authors']}))
+
+        for key2 in conferenceNodes:
+            conf2 = key2[0]
+            conf2year = key2[1]
+            weight = 0
+            if conf1 != conf2 and conf1year == conf2year-1:
+                # can use set and intersect
+                for author1 in conferenceInfo[conf1]['authors']:
+                    if author1 in conferenceInfo[conf2]['authors']:
+                        weight += 1
+                confEdges.append((conf1, conf2, weight))
+                if weight >= 0:
+                    if maxEdge < weight:
+                        maxEdge = weight
+                    if minEdge > weight:
+                        minEdge = weight
+            nodeWeight += weight
+
+        if nodeWeight >= 0:
+            if maxWeight < nodeWeight:
+                maxWeight = nodeWeight
+            if minWeight > nodeWeight:
+                minWeight = nodeWeight
+
+    SaveNodesEdgesinJSON(confNodeAttr, confEdges,'conference')
+
+
+
+def CreateAuthorNetwork (authorsInfo, inproceedsInfo):
+    authNodes = []
+    authEdges = []
+
+    for author, publications in authorsInfo.items():
+        tier3cnt = 0
+        publications.sort(key=itemgetter('year'))
+        prevPubl = None
+        success = 0
+        maxSuccess = 0
+        for publ in publications:
+            if publ['tier'] == 3:
+                if prevPubl is not None:
+                    if (int(publ['year']) - int(prevPubl['year'])) == 1:
+                        success += 1
+                    elif (int(publ['year']) - int(prevPubl['year'])) > 1:
+                        maxSuccess = success
+                        success = 0
+                tier3cnt += 1
+                prevPubl = publ
+        authNodes.append((author, {'size': len(publications), 'success': maxSuccess, 'tier3cnt': tier3cnt,
+                          'start': int(publications[0]['year']),
+                           'end': int(publications[len(publications)-1]['year'])}))
+
+    for key, publ in inproceedsInfo.items():
+        authors = publ['authors']
+        authorcheck = set()
+        for author1 in authors:
+            authorcheck.add(author1)
+            for author2 in authors:
+                if author1 != author2 and author2 not in authorcheck:
+                    authEdges.append((author1, author2, {'tier': int(publ['tier']), 'year':int(publ['year'])}))
+            authorcheck.clear()
+
+    SaveNodesEdgesinJSON(authNodes, authEdges,'author')
+
+
+# Store data into JSON
+def SaveNodesEdgesinJSON (nodes, edges, fileName):
+    with open('json/'+fileName+'Nodes.json', 'w') as json_file:
+        json.dump(nodes, json_file)
+
+    with open('json/'+fileName+'Edges.json', 'w') as json_file:
+        json.dump(edges, json_file)
+
+# Get data from JSON
+def ParseJSONtoDict (filename):
+    # Read JSON data into the datastore variable
+    if filename:
+        with open(filename, 'r') as f:
+            datastore = json.load(f)
+    return datastore
 
 
 def AddToConference (key, conftype, year, tier, publauthors):
