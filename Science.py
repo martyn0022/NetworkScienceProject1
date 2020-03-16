@@ -53,6 +53,8 @@ def GetDegreeDistribution(graph):
     degreeCount = collections.Counter(degree_sequence)
     degList, degCountList = zip(*degreeCount.items())
 
+    print(degList, degCountList)
+
     return degList, degCountList
 
 
