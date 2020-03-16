@@ -12,15 +12,17 @@ listOfJSON = [conferenceAuthorJSON, authorJSON, inproceedsJSON]
 def main ():
     # uncomment line below to preprocess dblp.xml again
     # ps.PreprocessConferencesAuthors(dblpFilename, listOfJSON)
-    ps.CreateNetworks()
+    # uncomment line below to create new nodes and edges
+    # ps.CreateNetworks()
 
-    ## network = ng.Network(listOfJSON)
-    # network.SaveNodesandEdges()
-    # network.CreateDiGraphConf(2000,2005)
-    ## network.CreateAuthGraph()
-    # network.CreateSubAuthGraph(2001,2001)
+    # inititalize networks class to create networkx graphs
+    networks = sc.Networks()
 
-    # network = sc.Networks()
+    # filter nodes and edges, and create subgraph of graph
+    authorSubGraph = sc.FilterAuthorNodesBySuccess(networks.GetAuthorGraph(), 3)
+
+    # calculate Degree Distribution
+    sc.GetDegreeDistribution(networks.GetAuthorGraph())
 
 
 

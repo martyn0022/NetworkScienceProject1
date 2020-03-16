@@ -28,6 +28,33 @@ class Networks:
         self.authorGraph.add_edges_from(edges)
 
 
+    def GetConferenceGraph(self):
+        return self.conferenceDiGraph
+
+
+    def GetAuthorGraph(self):
+        return self.authorGraph
+
+
+def FilterAuthorNodesBySuccess(authorGraph, minSuccess):
+    filteredNodes = []
+
+    for node in authorGraph.nodes.data():
+        if node[1]['success'] > minSuccess:
+            filteredNodes.append(node[0])
+
+    authorSubGraph = authorGraph.subgraph(filteredNodes).copy()
+
+    return authorSubGraph
+
+
+def GetDegreeDistribution(graph):
+    degree_sequence = sorted([d for n, d in graph.degree()], reverse=True)
+    degreeCount = collections.Counter(degree_sequence)
+    degList, degCountList = zip(*degreeCount.items())
+
+    return degList, degCountList
+
 
 # Get data from JSON
 def ParseJSONtoDict (filename):
