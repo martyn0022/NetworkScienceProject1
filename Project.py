@@ -18,13 +18,20 @@ def main ():
     # inititalize networks class to create networkx graphs
     networks = sc.Networks()
 
-    # filter nodes and edges, and create subgraph of graph
-    authorSubGraph = sc.FilterAuthorNodesBySuccess(networks.GetAuthorGraph(), 3)
+    # filter author nodes, and create subgraph
+    # authorSubGraph = sc.FilterAuthorNodes(networks.GetAuthorGraph(), startyear=2000, endyear=2002, minSuccess=0)
+
+    # filter conference nodes, and create a subgraph
+    # conferenceSubGraph = sc.FilterConferenceNodes(networks.GetConferenceGraph(), startyear=2000, endyear=2002)
 
     # calculate Degree Distribution
-    sc.GetDegreeDistribution(networks.GetAuthorGraph())
+    # sc.GetDegreeDistribution(networks.GetAuthorGraph())
 
+    # draw
+    # sc.DrawGraph(conferenceSubGraph)
 
+    print(min(networks.GetConferenceGraph().nodes.data(), key=lambda x: x[1]['year']))
+    print(networks.GetNumberOfConferences(), networks.GetNumberOfAuthors())
 
 if __name__ == "__main__":
     main()
