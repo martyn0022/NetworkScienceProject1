@@ -189,4 +189,37 @@ def DrawGraph(graph):
     plt.savefig("conferenceNW.png")
 
 
+def CreateAuthorDistribution(authorGraph):
+    maxDegree = max(authorGraph.degree, key=lambda x: x[1])[1]
+    minDegree = min(authorGraph.degree, key=lambda x: x[1])[1]
 
+    publication_seq = []
+    for node in authorGraph.nodes.data():
+        publication_seq.append(node[1]['size'])
+    publication_seq = sorted(publication_seq, reverse=True)
+    publicationCount = collections.Counter(publication_seq)
+
+    N = len(authorGraph.nodes)
+    pk = []
+    count=0
+    for publNum,cnt in publicationCount.items():
+        pk.append(publNum/N)
+        if publNum > 100:
+            count += cnt
+    print(count)
+    pk = sorted(pk, reverse=True)
+
+    publ, cnt = zip(*publicationCount.items())
+    print(publ)
+
+    ax = plt.gca()
+    ax.scatter(publ, cnt, c="r")
+    plt.title("Author Publications Distribution")
+    plt.ylabel("Count")
+    plt.xlabel("Publications")
+    ax.set(xscale="log")
+    ax.set(yscale="log")
+    plt.savefig("AuthorPublicationsDistribution.png")
+    # graph too large to be drawn, but algorithms based on degree etc, can be done
+
+    plt.close

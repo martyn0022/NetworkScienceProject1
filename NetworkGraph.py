@@ -265,13 +265,13 @@ class Network:
         authEdges = []
 
         for author, publications in self.authors.items():
-            tier3cnt = 0
+            tier1cnt = 0
             publications.sort(key=itemgetter('year'))
             prevPubl = None
             success = 0
             maxSuccess = 0
             for publ in publications:
-                if publ['tier'] == 3:
+                if publ['tier'] == 1:
                     if prevPubl is not None:
                         if (int(publ['year']) - int(prevPubl['year'])) == 1:
                             print("hi")
@@ -279,9 +279,9 @@ class Network:
                         elif (int(publ['year']) - int(prevPubl['year'])) > 1:
                             maxSuccess = success
                             success = 0
-                    tier3cnt += 1
+                    tier1cnt += 1
                     prevPubl = publ
-            authNodes.append((author, {'size': len(publications), 'success': maxSuccess, 'tier3cnt': tier3cnt}))
+            authNodes.append((author, {'size': len(publications), 'success': maxSuccess, 'tier1cnt': tier3cnt}))
 
         for key, publ in self.inproceeds.items():
             authors = publ['authors']
