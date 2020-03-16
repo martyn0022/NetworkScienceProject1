@@ -84,7 +84,7 @@ def CreateConferenceNetwork (conferenceInfo):
         conf1year = key1[1]
         nodeWeight = 0
 
-        confNodeAttr.append((conf1, {'size': key1[4], 'tier': key1[3],
+        confNodeAttr.append((conf1, {'size': key1[4], 'tier': key1[3], 'year': key1[1],
                                      'authors': conferenceInfo[conf1]['authors']}))
 
         for key2 in conferenceNodes:
@@ -170,7 +170,7 @@ def ParseJSONtoDict (filename):
 
 def AddToConference (key, conftype, year, tier, publauthors):
     authors = publauthors.copy()
-    if key not in conferences:
+    if key not in conferences and int(year) >= 1975:
         conferences[key] = {'key': key, 'conftype': conftype, 'year': year, 'tier': tier, 'authors': authors}
     elif key in conferences:
         conferences[key]['authors'].extend(authors)
@@ -294,70 +294,59 @@ class DBLPHandler(ContentHandler):
         self.isPublication = False
         self.currentTypeOfConf = ""
 
-    '''
     def WriteAsProceedings (self, conf):
         publicationTitle = self.currPublicationData["title"].lower()
         if self.currentTypeOfConf == "sigmod":
             if re.search("international conference on management of data", publicationTitle):
                 if re.search("(workshop|tutorial)", publicationTitle) is None:
                     self.currPublicationData.update({"confName": conf})
-                    proceedWriter.writerow(self.currPublicationData)
 
         elif self.currentTypeOfConf in ["vldb", "pvldb"]:
             if re.search("international conference on very large (data bases|databases)", publicationTitle):
                 if re.search("(workshop|tutorial)", publicationTitle) is None:
                     self.currPublicationData.update({"confName": conf})
-                    proceedWriter.writerow(self.currPublicationData)
 
         elif self.currentTypeOfConf == "kdd":
             if re.search("international conference on knowledge discovery (&|and) data mining", publicationTitle):
                 if re.search("(workshop|tutorial)", publicationTitle) is None:
                     self.currPublicationData.update({"confName": conf})
-                    proceedWriter.writerow(self.currPublicationData)
 
         elif self.currentTypeOfConf == "edbt":
             if re.search("international conference on extending database technology", publicationTitle):
                 if re.search("(workshop|tutorial)", publicationTitle) is None:
                     self.currPublicationData.update({"confName": conf})
-                    proceedWriter.writerow(self.currPublicationData)
 
         elif self.currentTypeOfConf == "icde":
             if re.search("international conference on data engineering", publicationTitle):
                 if re.search("(workshop|tutorial)", publicationTitle) is None:
                     self.currPublicationData.update({"confName": conf})
-                    proceedWriter.writerow(self.currPublicationData)
 
         elif self.currentTypeOfConf == "icdm":
             if re.search("ieee(.*)international conference on data mining", publicationTitle):
                 if re.search("(workshop|tutorial)", publicationTitle) is None:
                     self.currPublicationData.update({"confName": conf})
-                    proceedWriter.writerow(self.currPublicationData)
 
         elif self.currentTypeOfConf == "sdm":
             if re.search("siam international conference on data mining", publicationTitle):
                 if re.search("(workshop|tutorial)", publicationTitle) is None:
                     self.currPublicationData.update({"confName": conf})
-                    proceedWriter.writerow(self.currPublicationData)
 
         elif self.currentTypeOfConf == "cikm":
             if re.search("conference on information and knowledge management", publicationTitle):
                 if re.search("(workshop|tutorial)", publicationTitle) is None:
                     self.currPublicationData.update({"confName": conf})
-                    proceedWriter.writerow(self.currPublicationData)
 
         # some conferencesName are divided into parts <=3, conf/dasfaa/<year>-<1/2/3>
         elif self.currentTypeOfConf == "dasfaa":
             if re.search("database systems for advance(d|s) applications", publicationTitle):
                 if re.search("(workshop|tutorial)", publicationTitle) is None:
                     self.currPublicationData.update({"confName": conf})
-                    proceedWriter.writerow(self.currPublicationData)
 
         # some conferencesName are divided into parts <=3, conf/pakdd/<year>-<1/2/3>
         elif self.currentTypeOfConf == "pakdd":
             if re.search("knowledge discovery and data mining(.*)pacific-asia conference", publicationTitle):
                 if re.search("(workshop|tutorial)", publicationTitle) is None:
                     self.currPublicationData.update({"confName": conf})
-                    proceedWriter.writerow(self.currPublicationData)
 
         # some conferencesName are divided into parts <=3, conf/pkdd/<year>-<1/2/3>
         elif self.currentTypeOfConf == "pkdd":
@@ -366,15 +355,13 @@ class DBLPHandler(ContentHandler):
                     publicationTitle):
                 if re.search("(workshop|tutorial)", publicationTitle) is None:
                     self.currPublicationData.update({"confName": conf})
-                    proceedWriter.writerow(self.currPublicationData)
 
         # some conferencesName are divided into parts <=2, conf/dexa/<year>-<1/2/3>
         elif self.currentTypeOfConf == "dexa":
             if re.search("database and expert systems applications", publicationTitle):
                 if re.search("(workshop|tutorial)", publicationTitle) is None:
                     self.currPublicationData.update({"confName": conf})
-                    proceedWriter.writerow(self.currPublicationData)
-    '''
+
 class CSVWriter:
     def __init__ (self):
         self.inproceedWriter = None
