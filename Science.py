@@ -3,6 +3,7 @@ from operator import itemgetter
 import json
 
 import networkx as nx
+import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -27,10 +28,12 @@ def SaveNodesEdgesinJSON (nodes, edges, fileName):
 class Networks:
     def __init__ (self):
         self.conferenceDiGraph = nx.DiGraph()
+        self.conferenceDiGraph2 = nx.DiGraph()
         self.authorGraph = nx.Graph()
 
         self.CreateConferenceNetwork()
         self.CreateAuthorNetwork()
+        self.NewConferenceGraph()
 
 
     def CreateConferenceNetwork (self):
@@ -50,6 +53,8 @@ class Networks:
     def GetConferenceGraph(self):
         return self.conferenceDiGraph
 
+    def GetConferenceGraph2(self):
+        return self.conferenceDiGraph2
 
     def GetAuthorGraph(self):
         return self.authorGraph
@@ -60,12 +65,63 @@ class Networks:
     def GetNumberOfConferences(self):
         return len(self.conferenceDiGraph.nodes)
 
+    def CreateGraphForGUI(self, network='author', measure='degree'):
+        if network == 'author':
+            x,y = GetDegreeDistribution(self.authorGraph)
+
+        return x,y
+
+    def NewConferenceGraph(self):
+        conferenceGraph = self.conferenceDiGraph
+        nodes = []
+        for node in conferenceGraph.nodes.data():
+            conftype = node[0][0:-4]
+            if conftype == 'vldb':
+                conftype = 'pvldb'
+            if conftype not in nodes:
+                nodes.append(conftype)
+        # print(nodes)
+
+        edges = []
+        for edge in conferenceGraph.edges.data():
+            source = edge[0][0:-4]
+            target = edge[1][0:-4]
+            if source == 'vldb':
+                source = 'pvldb'
+
+            if target == 'vldb':
+                target = 'pvldb'
+
+            edges.append((source, target, edge[2]['weight']))
+
+        d={}
+        for edge in edges:
+            key = edge[0] + ',' + edge[1]
+            if key not in d:
+                d[key] = edge[2]
+            else:
+                d[key] += edge[2]
+        # print(d.keys(), d.values())
+
+        edges.clear()
+        for edge, weight in d.items():
+            source, target = edge.split(',')
+            # print(source, target)
+            edges.append((source, target, weight))
+        # print(edges)
+
+        graph = nx.DiGraph()
+        graph.add_nodes_from(nodes)
+        graph.add_weighted_edges_from(edges)
+
+        self.conferenceDiGraph2 = graph
+
 
 def FilterConferenceNodes(conferenceGraph, startyear=1950, endyear=2017, minTier=3, minSize=0):
     filteredNodes = []
 
     for node in conferenceGraph.nodes.data():
-        if node[1]['year'] in list(range(startyear, endyear)):
+        if node[1]['year'] in list(range(startyear, endyear+1)):
             if node[1]['tier'] <= minTier:
                 if node[1]['size'] >= minSize:
                     filteredNodes.append(node[0])
@@ -76,7 +132,7 @@ def FilterConferenceNodes(conferenceGraph, startyear=1950, endyear=2017, minTier
 
 
 # chris
-def FilterAuthorNodes(authorGraph, startyear=1950, endyear=2017, min=1, max=4000, minSuccess = 0):
+def FilterAuthorNodes(authorGraph, startyear=1950, endyear=2019, min=1, max=4000, minSuccess = 0):
     filteredNodes = []
 
     for node in authorGraph.nodes.data():
@@ -97,6 +153,27 @@ def GetDegreeDistribution(graph):
     # print(degList, degCountList)
 
     return degList, degCountList
+
+
+def GetDiGraphInDegreeStrengthPlot(graph):
+    print(graph.in_degree(graph, weight='weight'))
+    data = list(graph.in_degree(graph, weight='weight'))
+    data.sort(key=lambda tup: tup[1], reverse=True)
+    y_axis, x_axis = zip(*data)
+
+    y_pos = np.arange(len(y_axis))
+
+    plt.rcdefaults()
+    fig, ax = plt.subplots()
+    ax.barh(y_axis, x_axis, align='center')
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(y_axis)
+    ax.invert_yaxis()  # labels read top-to-bottom
+    ax.set_ylabel('Conference')
+    ax.set_xlabel('in_degree Strength')
+    ax.set_title('Movement Between Conferences')
+
+    plt.savefig('ConferencesMovement.png')
 
 
 # Chris
@@ -223,3 +300,57 @@ def CreateAuthorDistribution(authorGraph):
     # graph too large to be drawn, but algorithms based on degree etc, can be done
 
     plt.close
+
+
+def PlotGraph(x, y, xLabel, yLabel, title):
+    ax = plt.gca()
+    ax.scatter(x, y, c="r")
+    plt.title(title)
+    plt.ylabel(yLabel)
+    plt.xlabel(xLabel)
+    ax.set(xscale="log")
+    ax.set(yscale="log")
+    plt.savefig(title + '.png')
+    # graph too large to be drawn, but algorithms based on degree etc, can be done
+
+    plt.close
+
+
+def GetConferenceInDegreeStrength(conferenceGraph):
+    d = {}
+    for conf in conferenceGraph.nodes.data():
+        in_degree = conferenceGraph.in_degree(conf[0], weight='weight')
+        conftype = conf[0][0:-4]
+        if conftype not in d:
+            d[conftype] = [in_degree, 1]
+        else:
+            d[conftype][0] += in_degree
+            d[conftype][1] += 1
+
+    d['pvldb'][0] += d['vldb'][0]
+    d['pvldb'][1] += d['vldb'][1]
+    del d['vldb']
+
+    data = []
+    for k,v in d.items():
+        data.append((k,v[0]))
+    data.sort(key=lambda tup: tup[1], reverse=True)
+
+    x_axis = [i[1] for i in data]
+    y_axis = [i[0] for i in data]
+
+    y_pos = np.arange(len(y_axis))
+
+    plt.rcdefaults()
+    fig, ax = plt.subplots()
+    ax.barh(y_axis, x_axis, align='center')
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(y_axis)
+    ax.invert_yaxis()  # labels read top-to-bottom
+    ax.set_ylabel('Conference')
+    ax.set_xlabel('in_degree')
+    ax.set_title('Movement Between Conferences')
+
+    plt.savefig('ConferencesMovement.png')
+
+    return plt

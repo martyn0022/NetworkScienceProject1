@@ -281,7 +281,7 @@ class Network:
                             success = 0
                     tier1cnt += 1
                     prevPubl = publ
-            authNodes.append((author, {'size': len(publications), 'success': maxSuccess, 'tier1cnt': tier3cnt}))
+            authNodes.append((author, {'size': len(publications), 'success': maxSuccess, 'tier1cnt': tier1cnt}))
 
         for key, publ in self.inproceeds.items():
             authors = publ['authors']

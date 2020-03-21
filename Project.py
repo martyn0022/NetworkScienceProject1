@@ -1,6 +1,7 @@
 import Preprocessing as ps
 import NetworkGraph as ng
 import Science as sc
+import json
 
 conferenceAuthorJSON = "json/conferencesAndAuthors.json"
 authorJSON = "json/authors.json"
@@ -30,8 +31,10 @@ def main ():
     # draw
     # sc.DrawGraph(conferenceSubGraph)
 
-    print(min(networks.GetConferenceGraph().nodes.data(), key=lambda x: x[1]['year']))
-    print(networks.GetNumberOfConferences(), networks.GetNumberOfAuthors())
+    # sc.CreateAuthorDistribution(networks.authorGraph)
+    # PrintAuthorInformation(networks)
+    # PrintConferenceInformation(networks)
+
 
 if __name__ == "__main__":
     main()
