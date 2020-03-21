@@ -266,9 +266,9 @@ def DrawGraph(graph):
     plt.savefig("conferenceNW.png")
 
 
-def CreateAuthorDistribution(authorGraph):
-    maxDegree = max(authorGraph.degree, key=lambda x: x[1])[1]
-    minDegree = min(authorGraph.degree, key=lambda x: x[1])[1]
+def GetAuthorPublicationDistribution(authorGraph):
+    # maxDegree = max(authorGraph.degree, key=lambda x: x[1])[1]
+    # minDegree = min(authorGraph.degree, key=lambda x: x[1])[1]
 
     publication_seq = []
     for node in authorGraph.nodes.data():
@@ -276,29 +276,163 @@ def CreateAuthorDistribution(authorGraph):
     publication_seq = sorted(publication_seq, reverse=True)
     publicationCount = collections.Counter(publication_seq)
 
+    publ, cnt = zip(*publicationCount.items())
     N = len(authorGraph.nodes)
     pk = []
-    count=0
-    for publNum,cnt in publicationCount.items():
-        pk.append(publNum/N)
-        if publNum > 100:
-            count += cnt
-    print(count)
-    pk = sorted(pk, reverse=True)
+    for publNum, cnt in publicationCount.items():
+        pk.append(cnt/N)
+    pk = sorted(pk)
 
-    publ, cnt = zip(*publicationCount.items())
+    print(pk)
     print(publ)
 
-    ax = plt.gca()
-    ax.scatter(publ, cnt, c="r")
+    plt.figure()
+    plt.scatter(publ, pk, c="r", s=10)
+
+    plt.yscale('log')
+    plt.xscale('log')
+
+    # axes = plt.gca()
+    # axes.set_xlim([0.9,max(publ)])
+    # axes.set_ylim([min(pk)*0.1, 1])
+
+    plt.scatter(publ, pk, c="r", s=10)
+
     plt.title("Author Publications Distribution")
-    plt.ylabel("Count")
-    plt.xlabel("Publications")
-    ax.set(xscale="log")
-    ax.set(yscale="log")
+    plt.ylabel("P(# Publications)")
+    plt.xlabel("# Publications")
     plt.savefig("AuthorPublicationsDistribution.png")
     # graph too large to be drawn, but algorithms based on degree etc, can be done
 
+    plt.close
+
+
+def GetAuthorDegreeDistribution(graph):
+    degree_sequence = sorted([d for n, d in graph.degree()], reverse=True)
+    degreeCount = collections.Counter(degree_sequence)
+    degList, degCountList = zip(*degreeCount.items())
+
+    N = len(graph.nodes)
+    pk = []
+    for cnt in degCountList:
+        pk.append(cnt/N)
+
+    degList = sorted(degList)
+    pk = sorted(pk, reverse=True)
+    print(pk)
+    print(degList)
+
+    plt.figure()
+    plt.scatter(degList, pk, c="r", s=10)
+
+    plt.yscale('log')
+    plt.xscale('log')
+
+    axes = plt.gca()
+    axes.set_xlim([0.9,max(degList)])
+    axes.set_ylim([min(pk)*0.5, 1])
+
+    plt.title("Author Degree Distribution")
+    plt.ylabel("Pk")
+    plt.xlabel("Degree")
+    plt.savefig("AuthorDegreeDistribution.png")
+    # graph too large to be drawn, but algorithms based on degree etc, can be done
+
+    plt.close
+
+
+def GetAuthorReputationDistributionPlot(graph):
+    authorReputation = list(graph.nodes(data='reputation'))
+    authorReputation.sort(key=lambda tup: tup[0], reverse=True)
+    author, reputation = zip(*authorReputation)
+
+    reputationCount = collections.Counter(reputation)
+    reputationList, repCountList = zip(*reputationCount.items())
+
+    pk = []
+    N = len(authorReputation)
+    for cnt in repCountList:
+        pk.append(cnt/N)
+
+    plt.figure()
+    plt.scatter(reputationList, pk, c="r", s=10)
+
+    plt.yscale('log')
+    plt.xscale('log')
+
+    # axes = plt.gca()
+    # axes.set_xlim([0.9,max(degList)])
+    # axes.set_ylim([min(pk)*0.1, 1])
+
+    plt.scatter(reputationList, pk, c="r", s=10)
+
+    plt.title("Author Reputation Distribution")
+    plt.ylabel("P(Reputation)")
+    plt.xlabel("Reputation")
+    plt.savefig("AuthorReputationDistribution.png")
+    # graph too large to be drawn, but algorithms based on degree etc, can be done
+
+    plt.close
+
+
+
+def GetAuthorReputationDegreePlot(graph):
+    authorDegree = list(graph.degree())
+    authorReputation = list(graph.nodes(data='reputation'))
+
+    authorDegree.sort(key=lambda tup: tup[0], reverse=True)
+    authorReputation.sort(key=lambda tup: tup[0], reverse=True)
+
+    # print(len(authorDegree))
+    # print(len(authorReputation))
+
+    data = []
+    for i in range(len(authorDegree)):
+        data.append((authorReputation[i][1], authorDegree[i][1]))
+
+    data.sort(key=lambda tup: tup[0], reverse=True)
+
+    # print(data)
+
+    y_axis, x_axis = zip(*data)
+    # ax = plt.gca()
+    plt.scatter(y_axis, x_axis, c="r", s=1)
+    plt.title("Author Reputation vs. Degree")
+    plt.ylabel("Reputation")
+    plt.xlabel("Degree")
+    # ax.set(xscale="log")
+    # ax.set(yscale="log")
+    plt.savefig("AuthorReputationDegree.png")
+    plt.close
+
+
+def GetAuthorPublicationDegreePlot(graph):
+    authorDegree = list(graph.degree())
+    authorPublication = list(graph.nodes(data='size'))
+
+    authorDegree.sort(key=lambda tup: tup[0], reverse=True)
+    authorPublication.sort(key=lambda tup: tup[0], reverse=True)
+
+    # print(len(authorDegree))
+    # print(len(authorReputation))
+
+    data = []
+    for i in range(len(authorDegree)):
+        data.append((authorPublication[i][1], authorDegree[i][1]))
+
+    data.sort(key=lambda tup: tup[0], reverse=True)
+
+    # print(data)
+
+    y_axis, x_axis = zip(*data)
+    # ax = plt.gca()
+    plt.scatter(y_axis, x_axis, c="r", s=1)
+    plt.title("Author # Publications vs. Degree")
+    plt.ylabel("# Publications")
+    plt.xlabel("Degree")
+    # ax.set(xscale="log")
+    # ax.set(yscale="log")
+    plt.savefig("AuthorPublicationDegree.png")
     plt.close
 
 
