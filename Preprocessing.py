@@ -1,5 +1,4 @@
 import xml
-from typing import Dict
 from xml.sax.handler import ContentHandler
 from xml.sax import make_parser
 import io
@@ -7,19 +6,16 @@ import csv
 import re
 import config as cfg
 import json
-import collections
 from operator import itemgetter
 
 conferenceTier = cfg.conferenceTier
 conferencesName = cfg.conferencesName
 conferencesRegex = cfg.conferencesRegex
 
-publicationsType = ["article", "book", "incollection",
-                    "inproceedings", "mastersthesis", "phdthesis",
-                    "proceedings", "www"]
+publicationsType = ["article", "inproceedings", "proceedings"]
 
 publicationKeys = ["author", "title", "year", "volume",
-                   "booktitle", "journal", "crossref"]
+                   "booktitle", "journal", "crossref", "school"]
 
 dataHeader = ["publtype", "conftype", "confName", "key", "tier", "title", "year",
               "booktitle", "volume", "journal",
@@ -70,11 +66,6 @@ def CreateConferenceNetwork (conferenceInfo):
     conferenceNodes = []
     confNodeAttr = []
     confEdges = []
-    maxWeight = 0
-    minWeight = 1000
-    maxEdge = 0
-    minEdge = 1000
-
     for key, value in conferenceInfo.items():
         conferenceNodes.append((key, int(value['year']), value['conftype'],
                                 int(value['tier']), len(value['authors'])))
@@ -82,7 +73,6 @@ def CreateConferenceNetwork (conferenceInfo):
     for key1 in conferenceNodes:
         conf1 = key1[0]
         conf1year = key1[1]
-        nodeWeight = 0
 
         confNodeAttr.append((conf1, {'size': key1[4], 'tier': key1[3], 'year': key1[1],
                                      'authors': conferenceInfo[conf1]['authors']}))
@@ -97,24 +87,13 @@ def CreateConferenceNetwork (conferenceInfo):
                     if author1 in conferenceInfo[conf2]['authors']:
                         weight += 1
                 confEdges.append((conf1, conf2, weight))
-                if weight >= 0:
-                    if maxEdge < weight:
-                        maxEdge = weight
-                    if minEdge > weight:
-                        minEdge = weight
-            nodeWeight += weight
-
-        if nodeWeight >= 0:
-            if maxWeight < nodeWeight:
-                maxWeight = nodeWeight
-            if minWeight > nodeWeight:
-                minWeight = nodeWeight
 
     SaveNodesEdgesinJSON(confNodeAttr, confEdges,'conference')
 
 
 
 def CreateAuthorNetwork (authorsInfo, inproceedsInfo):
+    global prevTier1Year
     authNodes = []
     authEdges = []
 
@@ -127,10 +106,10 @@ def CreateAuthorNetwork (authorsInfo, inproceedsInfo):
         for publ in publications:
             if publ['tier'] == 1:
                 if prevPubl is not None:
-                    if (int(publ['year']) - prevTier1Year <= 1):
+                    if int(publ['year']) - prevTier1Year <= 1:
                         success += 1
-                    elif (int(publ['year']) - prevTier1Year > 1):
-                        if (success > maxSuccess):
+                    elif int(publ['year']) - prevTier1Year > 1:
+                        if success > maxSuccess:
                             maxSuccess = success
                         success = 0
                 
@@ -138,7 +117,7 @@ def CreateAuthorNetwork (authorsInfo, inproceedsInfo):
                 prevPubl = publ
                 prevTier1Year = int(publ['year'])
 
-        if (success > maxSuccess):
+        if success > maxSuccess:
             maxSuccess = success
         authNodes.append((author, {'size': len(publications), 'success': maxSuccess, 'tier1cnt': tier1cnt,
                             'start': int(publications[0]['year']),
@@ -235,6 +214,7 @@ class DBLPHandler(ContentHandler):
                            "crossref": "NULL"}
 
     def __init__ (self):
+        super().__init__()
         self.csv = CSVWriter()
         self.proceedWriter, self.inproceedWriter, self.authorWriter = self.csv.OpenCSVWriter()
 
@@ -301,6 +281,8 @@ class DBLPHandler(ContentHandler):
         self.isPublication = False
         self.currentTypeOfConf = ""
 
+
+    # not used
     def WriteAsProceedings (self, conf):
         publicationTitle = self.currPublicationData["title"].lower()
         if self.currentTypeOfConf == "sigmod":
@@ -345,7 +327,7 @@ class DBLPHandler(ContentHandler):
 
         # some conferencesName are divided into parts <=3, conf/dasfaa/<year>-<1/2/3>
         elif self.currentTypeOfConf == "dasfaa":
-            if re.search("database systems for advance(d|s) applications", publicationTitle):
+            if re.search("database systems for advance[ds] applications", publicationTitle):
                 if re.search("(workshop|tutorial)", publicationTitle) is None:
                     self.currPublicationData.update({"confName": conf})
 
@@ -369,6 +351,7 @@ class DBLPHandler(ContentHandler):
                 if re.search("(workshop|tutorial)", publicationTitle) is None:
                     self.currPublicationData.update({"confName": conf})
 
+# not used
 class CSVWriter:
     def __init__ (self):
         self.inproceedWriter = None
