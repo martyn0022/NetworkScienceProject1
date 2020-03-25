@@ -69,8 +69,6 @@ class Networks:
         if network == 'author':
             x,y = GetDegreeDistribution(self.authorGraph)
 
-        return x,y
-
     def NewConferenceGraph(self):
         conferenceGraph = self.conferenceDiGraph
         nodes = []
@@ -156,7 +154,7 @@ def GetDegreeDistribution(graph):
 
 
 def GetDiGraphInDegreeStrengthPlot(graph):
-    print(graph.in_degree(graph, weight='weight'))
+    # print(graph.in_degree(graph, weight='weight'))
     data = list(graph.in_degree(graph, weight='weight'))
     data.sort(key=lambda tup: tup[1], reverse=True)
     y_axis, x_axis = zip(*data)
@@ -283,9 +281,6 @@ def GetAuthorPublicationDistribution(authorGraph):
         pk.append(cnt/N)
     pk = sorted(pk)
 
-    print(pk)
-    print(publ)
-
     plt.figure()
     plt.scatter(publ, pk, c="r", s=10)
 
@@ -304,8 +299,6 @@ def GetAuthorPublicationDistribution(authorGraph):
     plt.savefig("AuthorPublicationsDistribution.png")
     # graph too large to be drawn, but algorithms based on degree etc, can be done
 
-    plt.close
-
 
 def GetAuthorDegreeDistribution(graph):
     degree_sequence = sorted([d for n, d in graph.degree()], reverse=True)
@@ -319,8 +312,6 @@ def GetAuthorDegreeDistribution(graph):
 
     degList = sorted(degList)
     pk = sorted(pk, reverse=True)
-    print(pk)
-    print(degList)
 
     plt.figure()
     plt.scatter(degList, pk, c="r", s=10)
@@ -337,8 +328,7 @@ def GetAuthorDegreeDistribution(graph):
     plt.xlabel("Degree")
     plt.savefig("AuthorDegreeDistribution.png")
     # graph too large to be drawn, but algorithms based on degree etc, can be done
-
-    plt.close
+    return degList, pk
 
 
 def GetAuthorReputationDistributionPlot(graph):
@@ -372,8 +362,7 @@ def GetAuthorReputationDistributionPlot(graph):
     plt.savefig("AuthorReputationDistribution.png")
     # graph too large to be drawn, but algorithms based on degree etc, can be done
 
-    plt.close
-
+    return reputationList, pk
 
 
 def GetAuthorReputationDegreePlot(graph):
@@ -395,6 +384,7 @@ def GetAuthorReputationDegreePlot(graph):
     # print(data)
 
     y_axis, x_axis = zip(*data)
+
     # ax = plt.gca()
     plt.scatter(y_axis, x_axis, c="r", s=1)
     plt.title("Author Reputation vs. Degree")
@@ -403,7 +393,6 @@ def GetAuthorReputationDegreePlot(graph):
     # ax.set(xscale="log")
     # ax.set(yscale="log")
     plt.savefig("AuthorReputationDegree.png")
-    plt.close
 
 
 def GetAuthorPublicationDegreePlot(graph):
@@ -433,7 +422,6 @@ def GetAuthorPublicationDegreePlot(graph):
     # ax.set(xscale="log")
     # ax.set(yscale="log")
     plt.savefig("AuthorPublicationDegree.png")
-    plt.close
 
 
 def PlotGraph(x, y, xLabel, yLabel, title):
@@ -446,8 +434,6 @@ def PlotGraph(x, y, xLabel, yLabel, title):
     ax.set(yscale="log")
     plt.savefig(title + '.png')
     # graph too large to be drawn, but algorithms based on degree etc, can be done
-
-    plt.close
 
 
 def GetConferenceInDegreeStrength(conferenceGraph):
@@ -485,6 +471,59 @@ def GetConferenceInDegreeStrength(conferenceGraph):
     ax.set_xlabel('in_degree')
     ax.set_title('Movement Between Conferences')
 
-    plt.savefig('ConferencesMovement.png')
+    plt.savefig('ConferencesMovement1.png')
 
     return plt
+
+
+def GetNetworkEffect(graph):
+    subgraph = FilterAuthorNodes(graph,1975,1985)
+    x1, y1 = GetAuthorReputationDistributionPlot(subgraph)
+    x2, y2 = GetAuthorDegreeDistribution(subgraph)
+
+    subgraph2 = FilterAuthorNodes(graph,1975,2015)
+    x3, y3 = GetAuthorReputationDistributionPlot(subgraph2)
+    x4, y4 = GetAuthorDegreeDistribution(subgraph2)
+
+    print('''Degree of 1975-1985: {}, max: {}
+Degree of 1975-2015: {}, max: {}
+'''.format(max(x2), max(x1), max(x4), max(x3)))
+
+    plt.figure()
+    plt.title('Network Effect')
+
+    plt.subplot(2, 2, 1)
+    plt.yscale('log')
+    plt.xscale('log')
+    plt.scatter(x1, y1, c="r", s=5)
+    plt.ylim((0.00001, 0.8))
+    plt.xlim(0.9, 10**3)
+    plt.ylabel('1975 - 1995')
+    plt.xlabel('Reputation')
+
+    plt.subplot(2, 2, 2)
+    plt.yscale('log')
+    plt.xscale('log')
+    plt.scatter(x2, y2, c="b", s=5)
+    plt.ylim((0.00001, 0.8))
+    plt.xlim(0.9, 10**2)
+    plt.xlabel('Degree')
+
+    plt.subplot(2, 2, 3)
+    plt.yscale('log')
+    plt.xscale('log')
+    plt.scatter(x3, y3, c="r", s=5)
+    plt.ylim((0.00001, 0.8))
+    plt.xlim(0.9, 10**3)
+    plt.ylabel('1975 - 2015')
+    plt.xlabel('Reputation')
+
+    plt.subplot(2, 2, 4)
+    plt.yscale('log')
+    plt.xscale('log')
+    plt.scatter(x4, y4, c="b", s=5)
+    plt.ylim((0.00001, 0.8))
+    plt.xlim(0.9, 10**2)
+    plt.xlabel('Degree')
+
+    plt.savefig("test.png")
