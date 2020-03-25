@@ -39,13 +39,13 @@ def PreprocessConferencesAuthors (dblpFileName, JSONList):
     print("PARSE1")
     parser.parse(io.open(dblpFileName))
 
-    with open(JSONList[0], 'w') as json_file:
+    with open(JSONList[0], 'w+') as json_file:
         json.dump(conferences, json_file)
 
-    with open(JSONList[1], 'w') as json_file:
+    with open(JSONList[1], 'w+') as json_file:
         json.dump(authorsList, json_file)
 
-    with open(JSONList[2], 'w') as json_file:
+    with open(JSONList[2], 'w+') as json_file:
         json.dump(inproceeds, json_file)
 
     print("done parsing")
@@ -91,14 +91,27 @@ def CreateConferenceNetwork (conferenceInfo):
             conf2 = key2[0]
             conf2year = key2[1]
             weight = 0
-            if conf1 != conf2 and conf1year < conf2year:
+            if conf1 != conf2 and conf1year == conf2year-1:
                 # can use set and intersect
                 for author1 in conferenceInfo[conf1]['authors']:
                     if author1 in conferenceInfo[conf2]['authors']:
                         weight += 1
                 confEdges.append((conf1, conf2, weight))
+                if weight >= 0:
+                    if maxEdge < weight:
+                        maxEdge = weight
+                    if minEdge > weight:
+                        minEdge = weight
+            nodeWeight += weight
+
+        if nodeWeight >= 0:
+            if maxWeight < nodeWeight:
+                maxWeight = nodeWeight
+            if minWeight > nodeWeight:
+                minWeight = nodeWeight
 
     SaveNodesEdgesinJSON(confNodeAttr, confEdges,'conference')
+
 
 
 def CreateAuthorNetwork (authorsInfo, inproceedsInfo):
@@ -106,40 +119,32 @@ def CreateAuthorNetwork (authorsInfo, inproceedsInfo):
     authEdges = []
 
     for author, publications in authorsInfo.items():
-        reputation = 0
         tier1cnt = 0
         publications.sort(key=itemgetter('year'))
         prevPubl = None
         success = 0
         maxSuccess = 0
-
         for publ in publications:
-            # Calculate Reputation
-            if publ['tier'] == 1:
-                reputation += 3
-            elif publ['tier'] == 2:
-                reputation += 2
-            elif publ['tier'] == 3:
-                reputation += 1
-
-            # Calculate Success
             if publ['tier'] == 1:
                 if prevPubl is not None:
-                    if (int(publ['year']) - int(prevPubl['year'])) == 1:
+                    if (int(publ['year']) - prevTier1Year <= 1):
                         success += 1
-                    elif (int(publ['year']) - int(prevPubl['year'])) > 1:
-                        maxSuccess = success
+                    elif (int(publ['year']) - prevTier1Year > 1):
+                        if (success > maxSuccess):
+                            maxSuccess = success
                         success = 0
+                
                 tier1cnt += 1
                 prevPubl = publ
+                prevTier1Year = int(publ['year'])
 
+        if (success > maxSuccess):
+            maxSuccess = success
         authNodes.append((author, {'size': len(publications), 'success': maxSuccess, 'tier1cnt': tier1cnt,
-                            'reputation': reputation,
                             'start': int(publications[0]['year']),
                             'end': int(publications[len(publications)-1]['year']),
                             'publ': publications}))
 
-    # Add an edge between authors if they work on same publication
     for key, publ in inproceedsInfo.items():
         authors = publ['authors']
         authorcheck = set()
