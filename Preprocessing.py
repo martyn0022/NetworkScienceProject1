@@ -97,6 +97,7 @@ def CreateAuthorNetwork (authorsInfo, inproceedsInfo):
     authEdges = []
 
     for author, publications in authorsInfo.items():
+        reputation = 0
         prevTier1Year = 2100
         tier1cnt = 0
         publications.sort(key=itemgetter('year'))
@@ -104,6 +105,14 @@ def CreateAuthorNetwork (authorsInfo, inproceedsInfo):
         success = 0
         maxSuccess = 0
         for publ in publications:
+            if publ['tier'] == 1:
+                reputation += 3
+            elif publ['tier'] == 2:
+                reputation += 2
+            elif publ['tier'] == 3:
+                reputation += 1
+
+
             if publ['tier'] == 1:
                 if prevPubl is not None:
                     if int(publ['year']) - prevTier1Year <= 1:
@@ -120,6 +129,7 @@ def CreateAuthorNetwork (authorsInfo, inproceedsInfo):
         if success > maxSuccess:
             maxSuccess = success
         authNodes.append((author, {'size': len(publications), 'success': maxSuccess, 'tier1cnt': tier1cnt,
+                            'reputation': reputation,
                             'start': int(publications[0]['year']),
                             'end': int(publications[len(publications)-1]['year']),
                             'publ': publications}))
