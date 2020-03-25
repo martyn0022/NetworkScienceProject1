@@ -81,7 +81,7 @@ def CreateConferenceNetwork (conferenceInfo):
             conf2 = key2[0]
             conf2year = key2[1]
             weight = 0
-            if conf1 != conf2 and conf1year == conf2year-1:
+            if conf1 != conf2 and conf1year < conf2year:
                 # can use set and intersect
                 for author1 in conferenceInfo[conf1]['authors']:
                     if author1 in conferenceInfo[conf2]['authors']:

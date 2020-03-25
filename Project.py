@@ -14,7 +14,7 @@ def main ():
     # uncomment line below to preprocess dblp.xml again
     # ps.PreprocessConferencesAuthors(dblpFilename, listOfJSON)
     # uncomment line below to create new nodes and edges
-    # ps.CreateNetworks()
+    ps.CreateNetworks()
 
     # inititalize networks class to create networkx graphs
     networks = sc.Networks()
