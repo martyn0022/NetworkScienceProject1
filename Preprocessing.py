@@ -93,11 +93,11 @@ def CreateConferenceNetwork (conferenceInfo):
 
 
 def CreateAuthorNetwork (authorsInfo, inproceedsInfo):
-    global prevTier1Year
     authNodes = []
     authEdges = []
 
     for author, publications in authorsInfo.items():
+        prevTier1Year = 2100
         tier1cnt = 0
         publications.sort(key=itemgetter('year'))
         prevPubl = None
