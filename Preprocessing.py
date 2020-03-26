@@ -67,32 +67,35 @@ def CreateConferenceNetwork (conferenceInfo):
     confNodeAttr = []
     confEdges = []
     for key, value in conferenceInfo.items():
-        if key[:-4] == 'pvldb':
-            key = 'vldb' + key[-4:]
         conferenceNodes.append((key, int(value['year']), value['conftype'],
                                 int(value['tier']), len(value['authors'])))
 
     for key1 in conferenceNodes:
         conf1 = key1[0]
         conf1year = key1[1]
+        if conf1[:-4] == 'pvldb':
+            conf1 = 'vldb' + conf1[-4:]
 
         confNodeAttr.append((conf1, {'size': key1[4], 'tier': key1[3], 'year': key1[1],
-                                     'authors': conferenceInfo[conf1]['authors']}))
+                                     'authors': conferenceInfo[key1[0]]['authors']}))
+
 
         for key2 in conferenceNodes:
             conf2 = key2[0]
             conf2year = key2[1]
+            if conf2[:-4] == 'pvldb':
+                conf2 = 'vldb' + conf2[-4:]
+
             weight = 0
             if conf1 != conf2 and conf1[:-4] != conf2[:-4] and conf1year < conf2year:
                 # can use set and intersect
-                for author1 in conferenceInfo[conf1]['authors']:
-                    if author1 in conferenceInfo[conf2]['authors']:
-                        if key1[3] == 1:
-                            weight += 3
-                        elif key[3] == 2:
-                            weight += 2
-                        elif key[3] == 3:
-                            weight += 1
+                z = set(conferenceInfo[key1[0]]['authors']).intersection(set(conferenceInfo[key2[0]]['authors']))
+                if key1[3] == 1:
+                    weight = len(z) * 3
+                elif key[3] == 2:
+                    weight = len(z) * 2
+                elif key[3] == 3:
+                    weight = len(z) * 1
                 confEdges.append((conf1, conf2, weight))
 
     SaveNodesEdgesinJSON(confNodeAttr, confEdges,'conference')
