@@ -87,7 +87,7 @@ def CreateConferenceNetwork (conferenceInfo):
                 conf2 = 'vldb' + conf2[-4:]
 
             weight = 0
-            if conf1 != conf2 and conf1[:-4] != conf2[:-4] and conf1year < conf2year:
+            if conf1 != conf2  and conf1year < conf2year:
                 # can use set and intersect
                 z = set(conferenceInfo[key1[0]]['authors']).intersection(set(conferenceInfo[key2[0]]['authors']))
                 if key1[3] == 1:
