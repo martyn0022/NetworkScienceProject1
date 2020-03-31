@@ -527,3 +527,5 @@ Degree of 1975-2015: {}, max: {}
     plt.xlabel('Degree')
 
     plt.savefig("test.png")
+
+    return plt
