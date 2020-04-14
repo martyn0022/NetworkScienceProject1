@@ -1,5 +1,5 @@
 import Preprocessing as ps
-import NetworkGraph as ng
+#import NetworkGraph as ng
 import Science as sc
 from Interface import *
 import json
@@ -19,7 +19,5 @@ def main ():
 
     # inititalize networks class to create networkx graphs
     networks = sc.Networks()
-
-
 if __name__ == "__main__":
     main()
