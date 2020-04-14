@@ -328,8 +328,26 @@ def GetAuthorDegreeDistribution(graph):
     return degList, pk
 
 
-def GetAuthorReputationDistributionPlot(graph):
-    authorReputation = list(graph.nodes(data='reputation'))
+def GetAuthorReputationDistributionPlot(graph, start_year, end_year):
+    plt.close()
+    authorReputation = []
+    for author, data in graph.nodes.data():
+        reputation = 0
+        publications = data['publ']
+        publications.sort(key=itemgetter('year'))
+
+        for publ in publications:
+            if int(publ['year']) in list(range(start_year, end_year+1)):
+                if publ['tier'] == 1:
+                    reputation += 3
+                elif publ['tier'] == 2:
+                    reputation += 2
+                elif publ['tier'] == 3:
+                    reputation += 1
+        if reputation > 0:
+            authorReputation.append((author, reputation))
+
+
     authorReputation.sort(key=lambda tup: tup[0], reverse=True)
     author, reputation = zip(*authorReputation)
 
@@ -358,7 +376,7 @@ def GetAuthorReputationDistributionPlot(graph):
     plt.xlabel("Reputation")
     # plt.savefig("AuthorReputationDistribution.png")
     # graph too large to be drawn, but algorithms based on degree etc, can be done
-
+    # plt.show()
     return reputationList, pk
 
 
@@ -421,18 +439,6 @@ def GetAuthorPublicationDegreePlot(graph):
     # plt.savefig("AuthorPublicationDegree.png")
 
 
-def PlotGraph(x, y, xLabel, yLabel, title):
-    ax = plt.gca()
-    ax.scatter(x, y, c="r")
-    plt.title(title)
-    plt.ylabel(yLabel)
-    plt.xlabel(xLabel)
-    ax.set(xscale="log")
-    ax.set(yscale="log")
-    # plt.savefig(title + '.png')
-    # graph too large to be drawn, but algorithms based on degree etc, can be done
-
-
 def GetConferenceInDegreeStrength(conferenceGraph):
     d = {}
     for conf in conferenceGraph.nodes.data():
@@ -469,66 +475,46 @@ def GetConferenceInDegreeStrength(conferenceGraph):
     return plt
 
 
-def GetNetworkEffect(graph):
+def GetAuthorMaximumDegreeChange(graph):
+    x_axis1 = []
+    y_axis1 = []
+    x_axis2 = []
+    y_axis2= []
+    for year in list(range(1975, 2019)):
+        subgraph = FilterAuthorNodes(graph,1975,year+1)
+
+        degList, degCountList = GetDegreeDistribution(subgraph)
+        y_axis1.append(max(degList))
+        x_axis1.append(year)
+
+        reputationList, _ = GetAuthorReputationDistributionPlot(subgraph, 1975,year+1)
+        y_axis2.append(max(reputationList))
+        x_axis2.append(year)
+
+    plt.close()
+    plt.figure()
+    # plotting the line 1 points
+    plt.plot(x_axis1, y_axis1, label = "Maximum Degree")
+    plt.plot(x_axis2, y_axis2, label = "Maximum Reputation")
+    plt.title("Change in Maximum Degree")
+    plt.ylabel("Maximum Degree")
+    plt.xlabel("Year")
+    plt.legend()
+    return plt
+
+
+def GetNetworkEffectOnReputation(graph):
     subgraph = FilterAuthorNodes(graph,1975,1985)
-    x1, y1 = GetAuthorReputationDistributionPlot(subgraph)
+    x1, y1 = GetAuthorReputationDistributionPlot(subgraph, 1975,1985)
     x2, y2 = GetAuthorDegreeDistribution(subgraph)
 
     subgraph2 = FilterAuthorNodes(graph,1975,2015)
-    x3, y3 = GetAuthorReputationDistributionPlot(subgraph2)
+    x3, y3 = GetAuthorReputationDistributionPlot(subgraph2, 1975,2015)
     x4, y4 = GetAuthorDegreeDistribution(subgraph2)
 
-#     print('''Degree of 1975-1985: {}, max: {}
-# Degree of 1975-2015: {}, max: {}
-# '''.format(max(x2), max(x1), max(x4), max(x3)))
-
-    authorSuccess = list(graph.nodes(data='success'))
-    authorSuccess.sort(key=lambda tup: tup[1], reverse=True)
-    authorReputation = list(graph.nodes(data='reputation'))
-    authorReputation.sort(key=lambda tup: tup[1], reverse=True)
-    authorDegree = list(graph.degree())
-    authorDegree.sort(key=lambda tup: tup[1], reverse=True)
-
-    impact = []
-    authorSuccess = authorSuccess[:20]
-    authorReputation = authorReputation[:20]
-    authorDegree = authorDegree[:20]
-    for author1 in authorDegree:
-        breaking = False
-        for author2 in authorSuccess:
-            if author1[0] == author2[0]:
-                for author3 in authorReputation:
-                    if author1[0] == author3[0]:
-                        impact.append((author1[0],author1[1],author2[1], author3[1]))
-                        breaking = True
-                        break
-            if breaking: break
-
-    impact.sort(key=lambda tup: tup[1])
-    # print(impact, len(impact))
-
-    degree = list(map(lambda x: x[1], impact))
-    success = list(map(lambda x: x[2], impact))
-    reputation = list(map(lambda x: x[3], impact))
-    authors = list(map(lambda x: x[0], impact))
-    x = np.arange(len(authors))
-    width = 0.3
-
-    # normalization
-    degree = [float(i)/max(degree) for i in degree]
-    success = [float(i)/max(success) for i in success]
-    reputation = [float(i)/max(reputation) for i in reputation]
-
-    fig, ax = plt.subplots()
-    ax.barh(x + width*2, degree, width, label='degree', color='#003f5c')
-    ax.barh(x + width, success, width, label='success', color='#bc5090')
-    ax.barh(x, reputation, width, label='reputation', color='#ffa600')
-    ax.set(yticks=x + width, yticklabels=authors, ylim=[2*width - 1, len(authors)])
-    ax.set_title('Authors with high Success, sorted by Degree')
-    plt.tight_layout()
-    ax.legend()
-    # plt.savefig("test1.png")
-    plt.close()
+    #     print('''Degree of 1975-1985: {}, max: {}
+    # Degree of 1975-2015: {}, max: {}
+    # '''.format(max(x2), max(x1), max(x4), max(x3)))
 
     plt.figure()
     plt.title('Network Effect')
@@ -570,3 +556,65 @@ def GetNetworkEffect(graph):
     # plt.savefig("test.png")
 
     return plt
+
+def GetNetworkEffectOnSuccess(graph):
+    authorSuccess = list(graph.nodes(data='success'))
+    authorSuccess.sort(key=lambda tup: tup[1], reverse=True)
+    authorReputation = list(graph.nodes(data='reputation'))
+    authorReputation.sort(key=lambda tup: tup[1], reverse=True)
+    authorDegree = list(graph.degree())
+    authorDegree.sort(key=lambda tup: tup[1], reverse=True)
+
+    impact = []
+    authorSuccess = authorSuccess[:20]
+    authorReputation = authorReputation[:20]
+    authorDegree = authorDegree[:20]
+    for author1 in authorDegree:
+        breaking = False
+        for author2 in authorSuccess:
+            if author1[0] == author2[0]:
+                for author3 in authorReputation:
+                    if author1[0] == author3[0]:
+                        impact.append((author1[0],author1[1],author2[1], author3[1]))
+                        breaking = True
+                        break
+            if breaking: break
+
+    impact.sort(key=lambda tup: tup[1])
+    # print(impact, len(impact))
+
+    degree = list(map(lambda x: x[1], impact))
+    success = list(map(lambda x: x[2], impact))
+    reputation = list(map(lambda x: x[3], impact))
+    authors = list(map(lambda x: x[0], impact))
+    x = np.arange(len(authors))
+    width = 0.2
+
+    # normalization
+    degree = [float(i)/max(degree) for i in degree]
+    success = [float(i)/max(success) for i in success]
+    reputation = [float(i)/max(reputation) for i in reputation]
+
+    fig, ax = plt.subplots()
+    ax.barh(x + width*2, degree, width, label='degree', color='#003f5c')
+    ax.barh(x + width, success, width, label='success', color='#bc5090')
+    ax.barh(x, reputation, width, label='reputation', color='#ffa600')
+    ax.set(yticks=x + width, yticklabels=authors, ylim=[2*width - 1, len(authors)])
+    ax.set_title('Authors with high Success, sorted by Degree')
+    plt.tight_layout()
+    ax.legend()
+    # plt.savefig("test1.png")
+
+    return plt
+
+
+def PlotGraph(x, y, xLabel, yLabel, title):
+    ax = plt.gca()
+    ax.scatter(x, y, c="r")
+    plt.title(title)
+    plt.ylabel(yLabel)
+    plt.xlabel(xLabel)
+    ax.set(xscale="log")
+    ax.set(yscale="log")
+    # plt.savefig(title + '.png')
+    # graph too large to be drawn, but algorithms based on degree etc, can be done
