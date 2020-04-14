@@ -171,10 +171,9 @@ def GetDiGraphInDegreeStrengthPlot(graph):
     ax.set_xlabel('in_degree Strength')
     ax.set_title('Movement Between Conferences')
 
-    plt.savefig('ConferencesMovement.png')
+    # plt.savefig('ConferencesMovement.png')
 
 
-# Chris
 def GetBetweenness(graph):
     #access specific node by using betweennessList[node]
     betweennessList = nx.betweenness_centrality(graph)
@@ -184,14 +183,12 @@ def GetBetweenness(graph):
             print(key, value)
 
 
-# Chris
 def GetEigenVector(graph):
     #access specific node by using EigenMatrix[node]
     eigenMatrix = nx.eigenvector_centrality(graph)
     print(eigenMatrix)
 
 
-# Chris
 def GetCloseness(graph):
     #acess specific node by using closeness[node]
     closenessList = nx.closeness_centrality(graph)
@@ -296,7 +293,7 @@ def GetAuthorPublicationDistribution(authorGraph):
     plt.title("Author Publications Distribution")
     plt.ylabel("P(# Publications)")
     plt.xlabel("# Publications")
-    plt.savefig("AuthorPublicationsDistribution.png")
+    # plt.savefig("AuthorPublicationsDistribution.png")
     # graph too large to be drawn, but algorithms based on degree etc, can be done
 
 
@@ -326,7 +323,7 @@ def GetAuthorDegreeDistribution(graph):
     plt.title("Author Degree Distribution")
     plt.ylabel("Pk")
     plt.xlabel("Degree")
-    plt.savefig("AuthorDegreeDistribution.png")
+    # plt.savefig("AuthorDegreeDistribution.png")
     # graph too large to be drawn, but algorithms based on degree etc, can be done
     return degList, pk
 
@@ -359,7 +356,7 @@ def GetAuthorReputationDistributionPlot(graph):
     plt.title("Author Reputation Distribution")
     plt.ylabel("P(Reputation)")
     plt.xlabel("Reputation")
-    plt.savefig("AuthorReputationDistribution.png")
+    # plt.savefig("AuthorReputationDistribution.png")
     # graph too large to be drawn, but algorithms based on degree etc, can be done
 
     return reputationList, pk
@@ -392,7 +389,7 @@ def GetAuthorReputationDegreePlot(graph):
     plt.xlabel("Degree")
     # ax.set(xscale="log")
     # ax.set(yscale="log")
-    plt.savefig("AuthorReputationDegree.png")
+    # plt.savefig("AuthorReputationDegree.png")
 
 
 def GetAuthorPublicationDegreePlot(graph):
@@ -421,7 +418,7 @@ def GetAuthorPublicationDegreePlot(graph):
     plt.xlabel("Degree")
     # ax.set(xscale="log")
     # ax.set(yscale="log")
-    plt.savefig("AuthorPublicationDegree.png")
+    # plt.savefig("AuthorPublicationDegree.png")
 
 
 def PlotGraph(x, y, xLabel, yLabel, title):
@@ -432,7 +429,7 @@ def PlotGraph(x, y, xLabel, yLabel, title):
     plt.xlabel(xLabel)
     ax.set(xscale="log")
     ax.set(yscale="log")
-    plt.savefig(title + '.png')
+    # plt.savefig(title + '.png')
     # graph too large to be drawn, but algorithms based on degree etc, can be done
 
 
@@ -471,7 +468,7 @@ def GetConferenceInDegreeStrength(conferenceGraph):
     ax.set_xlabel('in_degree')
     ax.set_title('Movement Between Conferences')
 
-    plt.savefig('ConferencesMovement1.png')
+    # plt.savefig('ConferencesMovement1.png')
 
     return plt
 
@@ -526,6 +523,6 @@ Degree of 1975-2015: {}, max: {}
     plt.xlim(0.9, 10**2)
     plt.xlabel('Degree')
 
-    plt.savefig("test.png")
+    # plt.savefig("test.png")
 
     return plt
