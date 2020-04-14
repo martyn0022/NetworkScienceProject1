@@ -65,10 +65,6 @@ class Networks:
     def GetNumberOfConferences(self):
         return len(self.conferenceDiGraph.nodes)
 
-    def CreateGraphForGUI(self, network='author', measure='degree'):
-        if network == 'author':
-            x,y = GetDegreeDistribution(self.authorGraph)
-
     def NewConferenceGraph(self):
         conferenceGraph = self.conferenceDiGraph
         nodes = []
@@ -115,6 +111,9 @@ class Networks:
         self.conferenceDiGraph2 = graph
 
 
+"""
+Filter Utilities
+"""
 def FilterConferenceNodes(conferenceGraph, startyear=1950, endyear=2017, minTier=3, minSize=0):
     filteredNodes = []
 
@@ -128,8 +127,6 @@ def FilterConferenceNodes(conferenceGraph, startyear=1950, endyear=2017, minTier
 
     return conferenceSubGraph
 
-
-# chris
 def FilterAuthorNodes(authorGraph, startyear=1950, endyear=2019, min=1, max=4000, minSuccess = 0):
     filteredNodes = []
 
@@ -142,38 +139,9 @@ def FilterAuthorNodes(authorGraph, startyear=1950, endyear=2019, min=1, max=4000
 
     return authorSubGraph
 
-
-def GetDegreeDistribution(graph):
-    degree_sequence = sorted([d for n, d in graph.degree()], reverse=True)
-    degreeCount = collections.Counter(degree_sequence)
-    degList, degCountList = zip(*degreeCount.items())
-
-    # print(degList, degCountList)
-
-    return degList, degCountList
-
-
-def GetDiGraphInDegreeStrengthPlot(graph):
-    # print(graph.in_degree(graph, weight='weight'))
-    data = list(graph.in_degree(graph, weight='weight'))
-    data.sort(key=lambda tup: tup[1], reverse=True)
-    y_axis, x_axis = zip(*data)
-
-    y_pos = np.arange(len(y_axis))
-
-    plt.rcdefaults()
-    fig, ax = plt.subplots()
-    ax.barh(y_axis, x_axis, align='center')
-    ax.set_yticks(y_pos)
-    ax.set_yticklabels(y_axis)
-    ax.invert_yaxis()  # labels read top-to-bottom
-    ax.set_ylabel('Conference')
-    ax.set_xlabel('in_degree Strength')
-    ax.set_title('Movement Between Conferences')
-
-    # plt.savefig('ConferencesMovement.png')
-
-
+"""
+NetworkX Measures Algorithm
+"""
 def GetBetweenness(graph):
     #access specific node by using betweennessList[node]
     betweennessList = nx.betweenness_centrality(graph)
@@ -182,18 +150,15 @@ def GetBetweenness(graph):
         if value > 0:
             print(key, value)
 
-
 def GetEigenVector(graph):
     #access specific node by using EigenMatrix[node]
     eigenMatrix = nx.eigenvector_centrality(graph)
     print(eigenMatrix)
 
-
 def GetCloseness(graph):
     #acess specific node by using closeness[node]
     closenessList = nx.closeness_centrality(graph)
     print(closenessList)
-
 
 def DrawGraph(graph):
     nodessize = []
@@ -260,6 +225,17 @@ def DrawGraph(graph):
 
     plt.savefig("conferenceNW.png")
 
+"""
+Used to solve questions
+"""
+def GetDegreeDistribution(graph):
+    degree_sequence = sorted([d for n, d in graph.degree()], reverse=True)
+    degreeCount = collections.Counter(degree_sequence)
+    degList, degCountList = zip(*degreeCount.items())
+
+    # print(degList, degCountList)
+
+    return degList, degCountList
 
 def GetAuthorPublicationDistribution(authorGraph):
     # maxDegree = max(authorGraph.degree, key=lambda x: x[1])[1]
@@ -296,7 +272,6 @@ def GetAuthorPublicationDistribution(authorGraph):
     # plt.savefig("AuthorPublicationsDistribution.png")
     # graph too large to be drawn, but algorithms based on degree etc, can be done
 
-
 def GetAuthorDegreeDistribution(graph):
     degree_sequence = sorted([d for n, d in graph.degree()], reverse=True)
     degreeCount = collections.Counter(degree_sequence)
@@ -327,8 +302,7 @@ def GetAuthorDegreeDistribution(graph):
     # graph too large to be drawn, but algorithms based on degree etc, can be done
     return degList, pk
 
-
-def GetAuthorReputationDistributionPlot(graph, start_year, end_year):
+def GetAuthorReputationDistribution(graph, start_year, end_year):
     plt.close()
     authorReputation = []
     for author, data in graph.nodes.data():
@@ -379,8 +353,7 @@ def GetAuthorReputationDistributionPlot(graph, start_year, end_year):
     # plt.show()
     return reputationList, pk
 
-
-def GetAuthorReputationDegreePlot(graph):
+def GetAuthorReputationDegree(graph):
     authorDegree = list(graph.degree())
     authorReputation = list(graph.nodes(data='reputation'))
 
@@ -409,8 +382,7 @@ def GetAuthorReputationDegreePlot(graph):
     # ax.set(yscale="log")
     # plt.savefig("AuthorReputationDegree.png")
 
-
-def GetAuthorPublicationDegreePlot(graph):
+def GetAuthorPublicationDegree(graph):
     authorDegree = list(graph.degree())
     authorPublication = list(graph.nodes(data='size'))
 
@@ -437,7 +409,6 @@ def GetAuthorPublicationDegreePlot(graph):
     # ax.set(xscale="log")
     # ax.set(yscale="log")
     # plt.savefig("AuthorPublicationDegree.png")
-
 
 def GetConferenceInDegreeStrength(conferenceGraph):
     d = {}
@@ -474,7 +445,6 @@ def GetConferenceInDegreeStrength(conferenceGraph):
 
     return plt
 
-
 def GetAuthorMaximumDegreeChange(graph):
     x_axis1 = []
     y_axis1 = []
@@ -487,7 +457,7 @@ def GetAuthorMaximumDegreeChange(graph):
         y_axis1.append(max(degList))
         x_axis1.append(year)
 
-        reputationList, _ = GetAuthorReputationDistributionPlot(subgraph, 1975,year+1)
+        reputationList, _ = GetAuthorReputationDistribution(subgraph, 1975,year+1)
         y_axis2.append(max(reputationList))
         x_axis2.append(year)
 
@@ -502,14 +472,13 @@ def GetAuthorMaximumDegreeChange(graph):
     plt.legend()
     return plt
 
-
-def GetNetworkEffectOnReputation(graph):
-    subgraph = FilterAuthorNodes(graph,1975,1985)
-    x1, y1 = GetAuthorReputationDistributionPlot(subgraph, 1975,1985)
+def GetNetworkEffectOnReputation(graph, year1=1985, year2=2015):
+    subgraph = FilterAuthorNodes(graph,1975,year1)
+    x1, y1 = GetAuthorReputationDistribution(subgraph, 1975,year1)
     x2, y2 = GetAuthorDegreeDistribution(subgraph)
 
-    subgraph2 = FilterAuthorNodes(graph,1975,2015)
-    x3, y3 = GetAuthorReputationDistributionPlot(subgraph2, 1975,2015)
+    subgraph2 = FilterAuthorNodes(graph,1975,year2)
+    x3, y3 = GetAuthorReputationDistribution(subgraph2, 1975,year2)
     x4, y4 = GetAuthorDegreeDistribution(subgraph2)
 
     #     print('''Degree of 1975-1985: {}, max: {}
@@ -525,7 +494,7 @@ def GetNetworkEffectOnReputation(graph):
     plt.scatter(x1, y1, c="r", s=5)
     plt.ylim((0.00001, 0.8))
     plt.xlim(0.9, 10**3)
-    plt.ylabel('1975 - 1995')
+    plt.ylabel('1975 - {}'.format(year1))
     plt.xlabel('Reputation')
 
     plt.subplot(2, 2, 2)
@@ -542,7 +511,7 @@ def GetNetworkEffectOnReputation(graph):
     plt.scatter(x3, y3, c="r", s=5)
     plt.ylim((0.00001, 0.8))
     plt.xlim(0.9, 10**3)
-    plt.ylabel('1975 - 2015')
+    plt.ylabel('1975 - {}'.format(year2))
     plt.xlabel('Reputation')
 
     plt.subplot(2, 2, 4)
@@ -606,15 +575,3 @@ def GetNetworkEffectOnSuccess(graph):
     # plt.savefig("test1.png")
 
     return plt
-
-
-def PlotGraph(x, y, xLabel, yLabel, title):
-    ax = plt.gca()
-    ax.scatter(x, y, c="r")
-    plt.title(title)
-    plt.ylabel(yLabel)
-    plt.xlabel(xLabel)
-    ax.set(xscale="log")
-    ax.set(yscale="log")
-    # plt.savefig(title + '.png')
-    # graph too large to be drawn, but algorithms based on degree etc, can be done
