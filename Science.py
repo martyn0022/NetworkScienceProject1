@@ -444,10 +444,6 @@ def GetConferenceInDegreeStrength(conferenceGraph):
             d[conftype][0] += in_degree
             d[conftype][1] += 1
 
-    d['pvldb'][0] += d['vldb'][0]
-    d['pvldb'][1] += d['vldb'][1]
-    del d['vldb']
-
     data = []
     for k,v in d.items():
         data.append((k,v[0]))
@@ -482,9 +478,9 @@ def GetNetworkEffect(graph):
     x3, y3 = GetAuthorReputationDistributionPlot(subgraph2)
     x4, y4 = GetAuthorDegreeDistribution(subgraph2)
 
-    print('''Degree of 1975-1985: {}, max: {}
-Degree of 1975-2015: {}, max: {}
-'''.format(max(x2), max(x1), max(x4), max(x3)))
+#     print('''Degree of 1975-1985: {}, max: {}
+# Degree of 1975-2015: {}, max: {}
+# '''.format(max(x2), max(x1), max(x4), max(x3)))
 
     authorSuccess = list(graph.nodes(data='success'))
     authorSuccess.sort(key=lambda tup: tup[1], reverse=True)
@@ -509,7 +505,7 @@ Degree of 1975-2015: {}, max: {}
             if breaking: break
 
     impact.sort(key=lambda tup: tup[1])
-    print(impact, len(impact))
+    # print(impact, len(impact))
 
     degree = list(map(lambda x: x[1], impact))
     success = list(map(lambda x: x[2], impact))
