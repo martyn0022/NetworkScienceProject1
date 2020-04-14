@@ -486,6 +486,54 @@ def GetNetworkEffect(graph):
 Degree of 1975-2015: {}, max: {}
 '''.format(max(x2), max(x1), max(x4), max(x3)))
 
+    authorSuccess = list(graph.nodes(data='success'))
+    authorSuccess.sort(key=lambda tup: tup[1], reverse=True)
+    authorReputation = list(graph.nodes(data='reputation'))
+    authorReputation.sort(key=lambda tup: tup[1], reverse=True)
+    authorDegree = list(graph.degree())
+    authorDegree.sort(key=lambda tup: tup[1], reverse=True)
+
+    impact = []
+    authorSuccess = authorSuccess[:20]
+    authorReputation = authorReputation[:20]
+    authorDegree = authorDegree[:20]
+    for author1 in authorDegree:
+        breaking = False
+        for author2 in authorSuccess:
+            if author1[0] == author2[0]:
+                for author3 in authorReputation:
+                    if author1[0] == author3[0]:
+                        impact.append((author1[0],author1[1],author2[1], author3[1]))
+                        breaking = True
+                        break
+            if breaking: break
+
+    impact.sort(key=lambda tup: tup[1])
+    print(impact, len(impact))
+
+    degree = list(map(lambda x: x[1], impact))
+    success = list(map(lambda x: x[2], impact))
+    reputation = list(map(lambda x: x[3], impact))
+    authors = list(map(lambda x: x[0], impact))
+    x = np.arange(len(authors))
+    width = 0.3
+
+    # normalization
+    degree = [float(i)/max(degree) for i in degree]
+    success = [float(i)/max(success) for i in success]
+    reputation = [float(i)/max(reputation) for i in reputation]
+
+    fig, ax = plt.subplots()
+    ax.barh(x + width*2, degree, width, label='degree', color='#003f5c')
+    ax.barh(x + width, success, width, label='success', color='#bc5090')
+    ax.barh(x, reputation, width, label='reputation', color='#ffa600')
+    ax.set(yticks=x + width, yticklabels=authors, ylim=[2*width - 1, len(authors)])
+    ax.set_title('Authors with high Success, sorted by Degree')
+    plt.tight_layout()
+    ax.legend()
+    # plt.savefig("test1.png")
+    plt.close()
+
     plt.figure()
     plt.title('Network Effect')
 
