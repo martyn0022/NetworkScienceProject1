@@ -7,7 +7,7 @@ import json
 conferenceAuthorJSON = "json/conferencesAndAuthors.json"
 authorJSON = "json/authors.json"
 inproceedsJSON = 'json/inproceeds.json'
-dblpFilename = "DataScienceDBLP.xml"
+dblpFilename = "dblp.xml"
 listOfJSON = [conferenceAuthorJSON, authorJSON, inproceedsJSON]
 
 
