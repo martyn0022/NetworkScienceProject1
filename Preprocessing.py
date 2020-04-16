@@ -4,7 +4,7 @@ from xml.sax import make_parser
 import io
 import csv
 import re
-import config as cfg
+import configs as cfg
 import json
 from operator import itemgetter
 

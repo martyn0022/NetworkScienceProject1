@@ -6,6 +6,9 @@ import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+
+import configs as cfg
+
 # Get data from JSON
 def ParseJSONtoDict (filename):
     # Read JSON data into the datastore variable
@@ -594,12 +597,43 @@ def GetNetworkEffectOnSuccess(graph):
 ###
 ###########################################################################
 
+def Q2_1():
+    df = cfg.consolidated_df
+    df["InstitutionRanks"] = "Unranked"
 
-def Q4():    
-    pd.set_option('display.min_rows', 999)
-    pd.set_option('display.max_rows', 999)
+    tier_1_10 = df[(df["Institution Rank"] > 0) & (df["Institution Rank"] < 11)].index
+    df.loc[tier_1_10, "InstitutionRanks"] = "001 - 010"
 
-    df = pd.read_csv("csv/FinalAuthorData.csv")
+    tier_95_105 = df[(df["Institution Rank"] > 94) & (df["Institution Rank"] < 106)].index
+    df.loc[tier_95_105, "InstitutionRanks"] = "095 - 104"
+
+    tier_195_205 = df[(df["Institution Rank"] > 194) & (df["Institution Rank"] < 206)].index
+    df.loc[tier_195_205, "InstitutionRanks"] = "105 - 204"
+
+    tier_290_305 = df[(df["Institution Rank"] > 290) & (df["Institution Rank"] < 305)].index
+    df.loc[tier_290_305, "InstitutionRanks"] = "295 - 304"
+
+    tier_395_405 = df[(df["Institution Rank"] > 394) & (df["Institution Rank"] < 405)].index
+    df.loc[tier_395_405, "InstitutionRanks"] = "395 - 404"
+
+    tier_495_505 = df[(df["Institution Rank"] > 489) & (df["Institution Rank"] < 501)].index
+    df.loc[tier_495_505, "InstitutionRanks"] = "490 - 500"
+
+    df = df.groupby("InstitutionRanks").mean()[["Tier 1 Count"]]
+    df.rename(columns = {"Tier 1 Count" : "Avg Tier 1 Publications Per Author"}, inplace = True)
+    
+    return df
+
+def Q2_2():
+    df = cfg.consolidated_df
+    df = df.sort_values("Tier 1 Count", ascending = False)
+    df = df.head(30)[["Name", "Institution", "Institution Rank", "Tier 1 Count"]].reset_index(drop = True)
+    df.index += 1
+    
+    return df
+
+def Q4():
+    df = cfg.consolidated_df
 
     df_count = df.groupby("Country").count()[["Name"]]
     df_count = df_count.rename(columns = {"Name" : "NumberOfAuthors"})
@@ -612,9 +646,10 @@ def Q4():
 
     df_agg = pd.merge(temp, df_count, on = "Country")
     df_agg = pd.merge(df_agg, temp2, on = "Country")
-    df_agg = df_agg.sort_values("AvgSuccess").reset_index().round(3)
+    df_agg = df_agg.sort_values("AvgSuccess", ascending = False).reset_index()
+    df_agg.index += 1
 
-    return df_agg.sort_values("AvgSuccess", ascending = False).head(10)
+    return df_agg.sort_values("AvgSuccess", ascending = False).head(10).round(3)
 
 def Q6_retrieveInitialTier(author):
     X_CONFERENCES = 5 ##Denotes taking first/last X number of conferences to evaluate initial/final reputation of author
@@ -655,7 +690,10 @@ def Q6():
     df_Q6 = pd.DataFrame(qn6Parameters)
 
     df_Q6 = df_Q6[["Name", "initialRep_5", "Success", "NumberOfPublications", "Tier 1 Count"]]
-    return df_Q6.sort_values("Success", ascending = False).head(10)
+    df_Q6 = df_Q6.sort_values("Success", ascending = False).reset_index(drop = True)
+    df_Q6.index += 1
+    
+    return df_Q6.head(20)
 
 
 
