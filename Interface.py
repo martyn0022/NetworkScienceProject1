@@ -58,7 +58,10 @@ def openGUI():
 
         elif option_network.get() == "Institutions":
             if option_factor.get() == "Prestige":
-                pass
+                isGraph = 0
+                df = Q2_2()
+                #just checking correlation
+                #print(df['Institution Rank'].corr(df['Tier 1 Count']))
             elif option_factor.get() == "Location":
                 isGraph = 0
                 df = Q6()
