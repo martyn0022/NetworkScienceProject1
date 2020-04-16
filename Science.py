@@ -467,72 +467,8 @@ def GetConferenceInDegreeStrength(conferenceGraph):
     # plt.savefig('ConferencesMovement1.png')
 
     return plt
-def selectSpecificNodeUp(authorGraph,year,perm):
-    filteredNodes =[]
-    f1 =[]
-    # authorGraph.nodes.data() returns a list of (nodeID, data)
-    # data is in dictionary
-    authorNodes = authorGraph.nodes.data()
-    if perm ==1:
-        # for each author
-        for node in authorNodes:
-            # for each paper in author
-            for paper in node[1]['publ']:
-                if paper['tier']!=1 and int(paper['year'])==year:
-                    for j in paper['authors']:
-                        filteredNodes.append(j)
-        for i in range(1,10):
-            for node in authorNodes:
-                for paper in node[1]['publ']:
-                    if paper['tier']==1 and (int(paper['year'])==(year+i)):
-                        for j in paper['authors']:
-                            if j in filteredNodes and j not in f1:
-                                f1.append(j)
 
-    filteredNodes = list(set(filteredNodes))
-    f1 = list(set(f1))
-    return len(f1)/len(filteredNodes)
-def selectSpecificNodeDown(authorGraph,year,perm):
-    filteredNodes =[]
-    f1 =[]
-    # authorGraph.nodes.data() returns a list of (nodeID, data)
-    # data is in dictionary
-    authorNodes = authorGraph.nodes.data()
-    if perm ==1:
-        # for each author
-        for node in authorNodes:
-            # for each paper in author
-            for paper in node[1]['publ']:
-                if paper['tier']==1 and int(paper['year'])==year:
-                    for j in paper['authors']:
-                        filteredNodes.append(j)
-        for i in range(1,10):
-            for node in authorNodes:
-                for paper in node[1]['publ']:
-                    if paper['tier']!=1 and (int(paper['year'])==(year+i)):
-                        for j in paper['authors']:
-                            if j in filteredNodes and j not in f1:
-                                f1.append(j)
 
-    filteredNodes = list(set(filteredNodes))
-    f1 = list(set(f1))
-    return len(f1)/len(filteredNodes)
-def movementUp(authorGraph):
-    x =[]
-    y=[]
-    for i in range(1990,2009):
-        x.append(selectSpecificNodeUp(authorGraph,i,1))
-        y.append(i)
-    plt.plot(y,x)
-    plt.show()
-def movementDown(authorGraph):
-    x =[]
-    y=[]
-    for i in range(1990,2009):
-        x.append(selectSpecificNodeDown(authorGraph,i,1))
-        y.append(i)
-    plt.plot(y,x)
-    plt.show()
 def GetNetworkEffect(graph):
     subgraph = FilterAuthorNodes(graph,1975,1985)
     x1, y1 = GetAuthorReputationDistributionPlot(subgraph)
