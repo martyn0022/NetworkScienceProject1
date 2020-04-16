@@ -274,7 +274,7 @@ def GetAuthorPublicationDistribution(authorGraph):
     plt.xlabel("# Publications")
     # plt.savefig("AuthorPublicationsDistribution.png")
     # graph too large to be drawn, but algorithms based on degree etc, can be done
-
+    return plt
 def GetAuthorDegreeDistribution(graph):
     degree_sequence = sorted([d for n, d in graph.degree()], reverse=True)
     degreeCount = collections.Counter(degree_sequence)
