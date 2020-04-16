@@ -6,6 +6,9 @@ import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 
+from submodules import Q4
+from submodules import Q6
+from submodules import Q2
 
 # Get data from JSON
 def ParseJSONtoDict (filename):
