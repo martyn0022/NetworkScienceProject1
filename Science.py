@@ -5,8 +5,7 @@ import json
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
-
-
+import pandas as pd
 # Get data from JSON
 def ParseJSONtoDict (filename):
     # Read JSON data into the datastore variable
@@ -587,3 +586,76 @@ def GetNetworkEffectOnSuccess(graph):
     # plt.savefig("test1.png")
 
     return plt
+
+
+### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
+###Question Based Functions
+###
+###
+###########################################################################
+
+
+def Q4():    
+    pd.set_option('display.min_rows', 999)
+    pd.set_option('display.max_rows', 999)
+
+    df = pd.read_csv("csv/FinalAuthorData.csv")
+
+    df_count = df.groupby("Country").count()[["Name"]]
+    df_count = df_count.rename(columns = {"Name" : "NumberOfAuthors"})
+
+    temp = df.groupby("Country").mean()[["Success"]]
+    temp = temp.rename(columns = {"Success" : "AvgSuccess"})
+
+    temp2 = df.groupby("Country").sum()[["Success"]]
+    temp2 = temp2.rename(columns = {"Success" : "TotalSuccess"})
+
+    df_agg = pd.merge(temp, df_count, on = "Country")
+    df_agg = pd.merge(df_agg, temp2, on = "Country")
+    df_agg = df_agg.sort_values("AvgSuccess").reset_index().round(3)
+
+    return df_agg.sort_values("AvgSuccess", ascending = False).head(10)
+
+def Q6_retrieveInitialTier(author):
+    X_CONFERENCES = 5 ##Denotes taking first/last X number of conferences to evaluate initial/final reputation of author
+    FIRST_SLICE_INT = X_CONFERENCES
+    LAST_SLICE_INT = X_CONFERENCES * -1 - 1
+
+    if(author[1]["size"] < X_CONFERENCES*1):
+        return
+
+    ##Retrieve first / last X publications
+    first = author[1]['publ'][0:FIRST_SLICE_INT:1]
+    last = author[1]['publ'][-1:LAST_SLICE_INT:-1]
+
+    initialTiers = sum(pub['tier'] for pub in first)
+    finalTiers = sum(pub['tier'] for pub in last)
+
+    data = {'Name' : author[0],
+            ('initialRep' + "_" + str(X_CONFERENCES))  : X_CONFERENCES * 3 - initialTiers,
+            ('FinalRep' + "_" + str(X_CONFERENCES)) : X_CONFERENCES * 3 - finalTiers,
+            'Success' : author[1]['success'],
+            'NumberOfPublications' : author[1]["size"],
+            'Tier 1 Count' : author[1]["tier1cnt"],
+            'Reputation' : author[1]["reputation"]
+            }
+    
+    return data
+
+def Q6():
+    with open('json/authorNodes.json') as f:
+        authorSet = json.load(f)
+
+    qn6Parameters = []
+    for author in authorSet:
+        temp = Q6_retrieveInitialTier(author)
+        if (temp):
+            qn6Parameters.append(temp)
+        
+    df_Q6 = pd.DataFrame(qn6Parameters)
+
+    df_Q6 = df_Q6[["Name", "initialRep_5", "Success", "NumberOfPublications", "Tier 1 Count"]]
+    return df_Q6.sort_values("Success", ascending = False).head(10)
+
+
+
