@@ -2,10 +2,10 @@
 CZ4071 Network Science, Project 1, Reputation and Success on Data Science
 
 Contributors:
-Sean Yap Hock Keong - Owner of Science.py, Preprocessing.py
-Joshua Ang Yong Woon - Co-author of Science.py, Preprocessing.py
-Pang Kia Le Jordon - Owner of Interface.py
-Christofer Himawan - Co-author of Science.py
+* Sean Yap Hock Keong - Owner of Science.py, Preprocessing.py
+* Joshua Ang Yong Woon - Co-author of Science.py, Preprocessing.py
+* Pang Kia Le Jordon - Owner of Interface.py
+* Christofer Himawan - Co-author of Science.py
 
 # Instructions
 \**All files required for the network information are saved in the JSON folder, no parsing is required to run the program*
