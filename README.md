@@ -10,6 +10,6 @@ Christofer Himawan - Co-author of Science.py
 # Instructions
 1.  Clone or download the repositry
 2.  (OPTIONAL) Download the file dblp.xml https://dblp.uni-trier.de/xml/ and put into the same folder
-2.1.  (OPTIONAL) Uncomment line 15 and 17 from Project.py to parse through the XML file again to create a new network from the dblp.xml
+3.  (OPTIONAL) Uncomment line 15 and 17 from Project.py to parse through the XML file again to create a new network from the dblp.xml
 *All files required for the network information are saved in the JSON folder, no parsing is required to run the program*
-3.  Run Project.py to start the program GUI
+4.  Run Project.py to start the program GUI
