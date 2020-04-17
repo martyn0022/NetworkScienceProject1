@@ -64,7 +64,7 @@ def openGUI():
                 #print(df['Institution Rank'].corr(df['Tier 1 Count']))
             elif option_factor.get() == "Location":
                 isGraph = 0
-                df = Q6()
+                df = Q4()
                 
         btn.config(state = 'normal')
         if isGraph: 

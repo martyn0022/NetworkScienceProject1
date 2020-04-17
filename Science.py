@@ -627,6 +627,10 @@ def Q2_1():
 def Q2_2():
     df = cfg.consolidated_df
     df = df.sort_values("Tier 1 Count", ascending = False)
+    df["Root Institution"].fillna(df["Institution"], inplace = True)
+    df.drop("Institution", axis = 1, inplace = True)
+    df.rename(columns = {"Root Institution" : "Institution"}, inplace = True)
+    
     df = df.head(30)[["Name", "Institution", "Institution Rank", "Tier 1 Count"]].reset_index(drop = True)
     df.index += 1
     
@@ -649,7 +653,7 @@ def Q4():
     df_agg = df_agg.sort_values("AvgSuccess", ascending = False).reset_index()
     df_agg.index += 1
 
-    return df_agg.sort_values("AvgSuccess", ascending = False).head(10).round(3)
+    return df_agg.head(20).round(3)
 
 def Q6_retrieveInitialTier(author):
     X_CONFERENCES = 5 ##Denotes taking first/last X number of conferences to evaluate initial/final reputation of author
@@ -690,6 +694,7 @@ def Q6():
     df_Q6 = pd.DataFrame(qn6Parameters)
 
     df_Q6 = df_Q6[["Name", "initialRep_5", "Success", "NumberOfPublications", "Tier 1 Count"]]
+    df_Q6.rename(columns = {"initialRep_5" : "initialRep(Max 10)"}, inplace = True)
     df_Q6 = df_Q6.sort_values("Success", ascending = False).reset_index(drop = True)
     df_Q6.index += 1
     
