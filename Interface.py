@@ -23,7 +23,7 @@ def openDF(df):
 def openGUI():
     #Defining the Tkinter Window
     root = Tk()
-    root.title("Interface")
+    root.title("DataScience Investigator")
     root.geometry("450x230")
 
     #to call from Science.py
