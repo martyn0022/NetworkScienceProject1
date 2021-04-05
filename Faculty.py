@@ -35,8 +35,8 @@ class Networks:
         self.CreateScseNetwork()
         
     def CreateScseNetwork (self):
-        nodes = ParseJSONtoDict('json/authorNodes.json')
-        edges = ParseJSONtoDict('json/authorEdges.json')
+        nodes = ParseJSONtoDict('json/ScseStaffNodes.json')
+        edges = ParseJSONtoDict('json/ScseStaffEdges.json')
         self.scseGraph.add_nodes_from(nodes)
         self.scseGraph.add_edges_from(edges)
         self.scseMultiGraph.add_nodes_from(nodes)
