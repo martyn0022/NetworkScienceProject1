@@ -1,12 +1,12 @@
 import Preprocessing as ps
-import Science as sc
-import Interface
+import Faculty as sc
+import gui
 import json
 
-conferenceAuthorJSON = "json/conferencesAndAuthors.json"
-authorJSON = "json/authors.json"
-inproceedsJSON = 'json/inproceeds.json'
-dblpFilename = "dblp.xml"
+conferenceAuthorJSON = "json/ScseStaff.json"
+#authorJSON = "json/authors.json"
+#inproceedsJSON = 'json/inproceeds.json'
+#dblpFilename = "dblp.xml"
 listOfJSON = [conferenceAuthorJSON, authorJSON, inproceedsJSON]
 
 
