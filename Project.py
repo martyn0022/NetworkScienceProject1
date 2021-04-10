@@ -18,7 +18,7 @@ def main ():
 
     # inititalize networks class to create networkx graphs
     networks = sc.Networks()
-    Interface.openGUI()
+    gui.openGUI()
 
 if __name__ == "__main__":
     main()

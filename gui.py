@@ -2,8 +2,8 @@ from tkinter import *
 from tkinter import ttk
 import numpy as np
 import matplotlib.pyplot as plt
-from Science import *
-from Science import Networks
+from Faculty import *
+from Faculty import Networks
 
 def openDF(df):
     df_window = Tk()
