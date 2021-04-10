@@ -4,3 +4,4 @@ __pycache__/Faculty.cpython-38.pyc
 __pycache__/gui.cpython-38.pyc
 __pycache__/Preprocessing.cpython-38.pyc
 __pycache__/Science.cpython-38.pyc
+*.pyc
