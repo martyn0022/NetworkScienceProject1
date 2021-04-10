@@ -73,6 +73,20 @@ def filterGraphs(graph, filterby, rank1, rank2 = None):
     subGraph = graph.subgraph(filteredNodes).copy()
     return subGraph
 
+def FilterScseNodes(scseGraph, startyear=1950, endyear=2021, min=1, max=4000, minSuccess = 0):
+    filteredNodes = []
+
+    for node in scseGraph.nodes.data():
+        if node[1]['start'] >= startyear and node[1]['end'] <= endyear:
+            if node[1]['success'] >= minSuccess:
+                filteredNodes.append(node[0])
+
+    scseSubGraph = scseGraph.subgraph(filteredNodes).copy()
+
+    print(scseSubGraph)
+
+    return scseSubGraph
+
 """
 NetworkX Measures Algorithm
 """
@@ -391,7 +405,7 @@ def GetAuthorMaximumDegreeChange(graph):
     x_axis2 = []
     y_axis2= []
     for year in list(range(1975, 2019)):
-        subgraph = FilterAuthorNodes(graph,1975,year+1)
+        subgraph = FilterScseNodes(graph,1975,year+1)
 
         degList, degCountList = GetDegreeDistribution(subgraph)
         y_axis1.append(max(degList))
