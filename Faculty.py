@@ -28,12 +28,12 @@ def SaveNodesEdgesinJSON (nodes, edges, fileName):
 
 
 class Networks:
-    
+
     def __init__ (self):
         self.scseGraph = nx.Graph()
         self.scseMultiGraph = nx.MultiGraph()
         self.CreateScseNetwork()
-        
+
     def CreateScseNetwork (self):
         nodes = ParseJSONtoDict('json/ScseStaffNodes.json')
         edges = ParseJSONtoDict('json/ScseStaffEdges.json')
@@ -44,12 +44,12 @@ class Networks:
 
     def GetScseNetwork(self):
         return self.scseGraph
-    
+
     def GetScseMultiNetwork(self):
         return self.scseMultiGraph
 
     def CreateGraphForGUI(self):
-		x,y = GetDegreeDistribution(self.scseGraph)
+        x,y = GetDegreeDistribution(self.scseGraph)
 
 
 """
@@ -72,6 +72,20 @@ def filterGraphs(graph, filterby, rank1, rank2 = None):
 
     subGraph = graph.subgraph(filteredNodes).copy()
     return subGraph
+
+def FilterScseNodes(scseGraph, startyear=1950, endyear=2021, min=1, max=4000, minSuccess = 0):
+    filteredNodes = []
+
+    for node in scseGraph.nodes.data():
+        if node[1]['start'] >= startyear and node[1]['end'] <= endyear:
+            if node[1]['success'] >= minSuccess:
+                filteredNodes.append(node[0])
+
+    scseSubGraph = scseGraph.subgraph(filteredNodes).copy()
+
+    print(scseSubGraph)
+
+    return scseSubGraph
 
 """
 NetworkX Measures Algorithm
@@ -182,7 +196,7 @@ def GetScsePublicationDistribution(Graph):
     publicationCount = collections.Counter(publication_seq)
 
     publ, cnt = zip(*publicationCount.items())
-    N = len(authorGraph.nodes)
+    N = len(Graph.nodes)
     pk = []
     for publNum, cnt in publicationCount.items():
         pk.append(cnt/N)
@@ -391,7 +405,7 @@ def GetAuthorMaximumDegreeChange(graph):
     x_axis2 = []
     y_axis2= []
     for year in list(range(1975, 2019)):
-        subgraph = FilterAuthorNodes(graph,1975,year+1)
+        subgraph = FilterScseNodes(graph,1975,year+1)
 
         degList, degCountList = GetDegreeDistribution(subgraph)
         y_axis1.append(max(degList))
@@ -549,7 +563,7 @@ def Q2_1():
 
     df = df.groupby("InstitutionRanks").mean()[["Tier 1 Count"]]
     df.rename(columns = {"Tier 1 Count" : "Avg Tier 1 Publications Per Author"}, inplace = True)
-    
+
     return df
 
 def Q2_2():
@@ -558,10 +572,10 @@ def Q2_2():
     df["Root Institution"].fillna(df["Institution"], inplace = True)
     df.drop("Institution", axis = 1, inplace = True)
     df.rename(columns = {"Root Institution" : "Institution"}, inplace = True)
-    
+
     df = df.head(30)[["Name", "Institution", "Institution Rank", "Tier 1 Count"]].reset_index(drop = True)
     df.index += 1
-    
+
     return df
 
 def Q4():
@@ -606,7 +620,7 @@ def Q6_retrieveInitialTier(author):
             'Tier 1 Count' : author[1]["tier1cnt"],
             'Reputation' : author[1]["reputation"]
             }
-    
+
     return data
 
 def Q6():
@@ -618,15 +632,12 @@ def Q6():
         temp = Q6_retrieveInitialTier(author)
         if (temp):
             qn6Parameters.append(temp)
-        
+
     df_Q6 = pd.DataFrame(qn6Parameters)
 
     df_Q6 = df_Q6[["Name", "initialRep_5", "Success", "NumberOfPublications", "Tier 1 Count"]]
     df_Q6.rename(columns = {"initialRep_5" : "initialRep(Max 10)"}, inplace = True)
     df_Q6 = df_Q6.sort_values("Success", ascending = False).reset_index(drop = True)
     df_Q6.index += 1
-    
+
     return df_Q6.head(20)
-
-
-
