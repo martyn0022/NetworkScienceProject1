@@ -73,13 +73,12 @@ def filterGraphs(graph, filterby, rank1, rank2 = None):
     subGraph = graph.subgraph(filteredNodes).copy()
     return subGraph
 
-def FilterScseNodes(scseGraph, startyear=1950, endyear=2021, min=1, max=4000, minSuccess = 0):
+def FilterScseNodes(scseGraph, startyear, endyear):
     filteredNodes = []
 
     for node in scseGraph.nodes.data():
-        if node[1]['start'] >= startyear and node[1]['end'] <= endyear:
-            if node[1]['success'] >= minSuccess:
-                filteredNodes.append(node[0])
+        if node[1]['start'] >= startyear :
+            filteredNodes.append(node[0])
 
     scseSubGraph = scseGraph.subgraph(filteredNodes).copy()
 
@@ -404,14 +403,14 @@ def GetAuthorMaximumDegreeChange(graph):
     y_axis1 = []
     x_axis2 = []
     y_axis2= []
-    for year in list(range(1975, 2019)):
-        subgraph = FilterScseNodes(graph,1975,year+1)
+    for year in list(range(2000, 2019)):
+        subgraph = FilterScseNodes(graph,2000,year+1)
 
         degList, degCountList = GetDegreeDistribution(subgraph)
         y_axis1.append(max(degList))
         x_axis1.append(year)
 
-        _, reputationList, _ = GetAuthorReputationDistribution(subgraph, 1975,year+1)
+        _, reputationList, _ = GetScseReputationDistribution(subgraph, 1975,year+1)
         y_axis2.append(max(reputationList))
         x_axis2.append(year)
 
