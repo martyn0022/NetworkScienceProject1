@@ -26,14 +26,14 @@ def SaveNodesEdgesinJSON (nodes, edges, fileName):
     with open('json/'+fileName+'Edges.json', 'w') as json_file:
         json.dump(edges, json_file)
 
-
 class Networks:
-
+    
     def __init__ (self):
         self.scseGraph = nx.Graph()
         self.scseMultiGraph = nx.MultiGraph()
+        self.CoauthorGraph = self.CreateCoauthorNetwork()
         self.CreateScseNetwork()
-
+        
     def CreateScseNetwork (self):
         nodes = ParseJSONtoDict('json/ScseStaffNodes.json')
         edges = ParseJSONtoDict('json/ScseStaffEdges.json')
@@ -42,11 +42,27 @@ class Networks:
         self.scseMultiGraph.add_nodes_from(nodes)
         self.scseMultiGraph.add_edges_from(edges)
 
+    def CreateCoauthorNetwork (self):
+        nodes = ParseJSONtoDict('json/CoauthorNodes.json')
+        edges = ParseJSONtoDict('json/CoauthorEdges.json')
+        dummy_graph = nx.MultiGraph()
+        dummy_graph.add_nodes_from(nodes)
+        dummy_graph.add_edges_from(edges)
+        mesh = sorted(dummy_graph.degree, key=lambda x: x[1], reverse=True)
+        k = [i[0] for i in mesh]
+        top_1000 = k[:1075]
+        top_1000graph = dummy_graph.subgraph(top_1000).copy()
+        return top_1000graph
+        
     def GetScseNetwork(self):
         return self.scseGraph
-
+    
     def GetScseMultiNetwork(self):
         return self.scseMultiGraph
+
+    def GetCoauthorNetwork(self):
+        return self.CoauthorGraph
+    
 
     def CreateGraphForGUI(self):
         x,y = GetDegreeDistribution(self.scseGraph)
@@ -77,7 +93,7 @@ def FilterScseNodes(scseGraph, startyear, endyear):
     filteredNodes = []
 
     for node in scseGraph.nodes.data():
-        if node[1]['start'] >= startyear :
+        if node[1]['start'] >= startyear or node[1]['end'] <= endyear :
             filteredNodes.append(node[0])
 
     scseSubGraph = scseGraph.subgraph(filteredNodes).copy()
@@ -249,7 +265,7 @@ def GetScseDegreeDistribution(graph):
     # graph too large to be drawn, but algorithms based on degree etc, can be done
     return plt, degList, pk
 
-def GetScseReputationDistribution(graph, start_year=1975, end_year=2019):
+def GetScseReputationDistribution(graph, start_year, end_year=2019):
     plt.close()
     authorReputation = []
     for author, data in graph.nodes.data():
