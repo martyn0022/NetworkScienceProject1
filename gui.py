@@ -49,12 +49,10 @@ def openGUI():
                 elif option_graph.get() == "Maximum Degree Change":
                     graph = GetAuthorMaximumDegreeChange(data.GetScseNetwork())
 
-        elif option_network.get() == "Conferences":
-            if option_graph.get() == "In Degree Strength":
-                graph= GetConferenceInDegreeStrength(data.GetConferenceGraph())
-            elif option_graph.get() == "Impact on a Data Scientist's career":
-                isGraph = 0
-                df = Q6()
+        elif option_network.get() == "Coauthor":
+                if option_graph.get() == "Degree Distribution":
+                    graph ,no,need = GetScseDegreeDistribution(data.GetCoauthorNetwork())
+
 
         elif option_network.get() == "Institutions":
             if option_factor.get() == "Prestige":
@@ -84,8 +82,8 @@ def openGUI():
                 option_factor.set("Not Applicable")
                 dropdown_factor = OptionMenu(root, option_factor,"Not Applicable")
                 dropdown_factor.place(x=100,y=55)
-        elif option_network.get() == "Conferences":
-            option_graph.set("In Degree Strength")
+        elif option_network.get() == "Coauthor":
+            option_graph.set("Degree Distribution")
             dropdown_graph = OptionMenu(root, option_graph, *measures1)
             dropdown_graph.place(x=100,y=95)
 
@@ -136,7 +134,7 @@ def openGUI():
     #options for networkgraphs
     network = [
         "SCSE",
-        "Conferences",
+        "Coauthor",
         "Institutions"
         ]
 
@@ -148,15 +146,10 @@ def openGUI():
 
     #options for questions, will be changed accordingly
     measures = [
-        "Degree Distribution",
-        "Publication Distribution",
-        "Reputation Distribution",
-        "Reputation Degree",
-        "Maximum Degree Change"
+        "Degree Distribution"
         ]
     measures1 = [
-        "In Degree Strength",
-        "Impact on a Data Scientist's career"
+        "Degree Distribution"
         ]
     measures2 = [
         "Correlation to authors who publish in premium venues"

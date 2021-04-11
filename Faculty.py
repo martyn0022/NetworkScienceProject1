@@ -27,13 +27,13 @@ def SaveNodesEdgesinJSON (nodes, edges, fileName):
         json.dump(edges, json_file)
 
 class Networks:
-    
+
     def __init__ (self):
         self.scseGraph = nx.Graph()
         self.scseMultiGraph = nx.MultiGraph()
         self.CoauthorGraph = self.CreateCoauthorNetwork()
         self.CreateScseNetwork()
-        
+
     def CreateScseNetwork (self):
         nodes = ParseJSONtoDict('json/ScseStaffNodes.json')
         edges = ParseJSONtoDict('json/ScseStaffEdges.json')
@@ -45,7 +45,7 @@ class Networks:
     def CreateCoauthorNetwork (self):
         nodes = ParseJSONtoDict('json/CoauthorNodes.json')
         edges = ParseJSONtoDict('json/CoauthorEdges.json')
-        dummy_graph = nx.MultiGraph()
+        dummy_graph = nx.Graph()
         dummy_graph.add_nodes_from(nodes)
         dummy_graph.add_edges_from(edges)
         mesh = sorted(dummy_graph.degree, key=lambda x: x[1], reverse=True)
@@ -53,16 +53,16 @@ class Networks:
         top_1000 = k[:1075]
         top_1000graph = dummy_graph.subgraph(top_1000).copy()
         return top_1000graph
-        
+
     def GetScseNetwork(self):
         return self.scseGraph
-    
+
     def GetScseMultiNetwork(self):
         return self.scseMultiGraph
 
     def GetCoauthorNetwork(self):
         return self.CoauthorGraph
-    
+
 
     def CreateGraphForGUI(self):
         x,y = GetDegreeDistribution(self.scseGraph)
@@ -265,12 +265,15 @@ def GetScseDegreeDistribution(graph):
     # graph too large to be drawn, but algorithms based on degree etc, can be done
     return plt, degList, pk
 
-def GetScseReputationDistribution(graph, start_year, end_year=2019):
+def GetScseReputationDistribution(graph, start_year=2000, end_year=2019):
     plt.close()
     authorReputation = []
+    count = 0
     for author, data in graph.nodes.data():
         reputation = 0
         publications = data['publ']
+        count+=1
+        print(count)
         publications.sort(key=itemgetter('year'))
 
         for publ in publications:
@@ -419,14 +422,14 @@ def GetAuthorMaximumDegreeChange(graph):
     y_axis1 = []
     x_axis2 = []
     y_axis2= []
-    for year in list(range(2000, 2019)):
+    for year in list(range(2000, 2021)):
         subgraph = FilterScseNodes(graph,2000,year+1)
 
         degList, degCountList = GetDegreeDistribution(subgraph)
         y_axis1.append(max(degList))
         x_axis1.append(year)
 
-        _, reputationList, _ = GetScseReputationDistribution(subgraph, 1975,year+1)
+        _, reputationList, _ = GetScseReputationDistribution(subgraph, 2000,year+1)
         y_axis2.append(max(reputationList))
         x_axis2.append(year)
 
