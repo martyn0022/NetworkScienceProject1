@@ -54,21 +54,28 @@ def openGUI():
                     graph ,no,need = GetScseDegreeDistribution(data.GetCoauthorNetwork())
 
 
-        elif option_network.get() == "Institutions":
-            if option_factor.get() == "Prestige":
-                isGraph = 0
-                df = Q2_2()
-                #just checking correlation
-                #print(df['Institution Rank'].corr(df['Tier 1 Count']))
-            elif option_factor.get() == "Location":
-                isGraph = 0
-                df = Q4()
+        elif option_network.get() == "Faculty Comparisons":
+            if option_factor.get() == "position":
+                filter = 'management'
+                if option_graph.get() == "Professor":
+                    rank1 = "Professor"
+                elif option_graph.get() == "Associate Professor":
+                    rank1 = "Associate Professor"
+                elif option_graph.get() == "Assistant Professor":
+                    rank1 = "Assistant Professor"
+                elif option_graph.get() == "Lecturer":
+                    rank1 = "Lecturer"
+
+            elif option_factor.get() == "management":
+                filter = 'position'
+            elif option_factor.get() == "area":
+                filter = 'area'
+
+            graph = compareFiltered(data.GetScseNetwork(), filter,rank1,rank2)
 
         btn.config(state = 'normal')
         if isGraph:
             graph.show()
-        else:
-            openDF(df)
 
 
     #to update the options based on previous options
@@ -91,16 +98,16 @@ def openGUI():
                 option_factor.set("Not Applicable")
                 dropdown_factor = OptionMenu(root, option_factor,"Not Applicable")
                 dropdown_factor.place(x=100,y=55)
-        elif option_network.get() == "Institutions":
-            option_factor.set("Prestige")
+        elif option_network.get() == "Faculty Comparisons":
+            option_factor.set("management")
             dropdown_factor = OptionMenu(root, option_factor, *factor,command = update)
             dropdown_factor.place(x=100,y=55)
             update()
 
 
     def update(*args):
-        if option_factor.get() == "Prestige":
-            option_graph.set("Correlation to authors who publish in premium venues")
+        if option_factor.get() == "position":
+            option_graph.set("Professor")
             dropdown_graph = OptionMenu(root, option_graph, *measures2)
             dropdown_graph.place(x=100,y=95)
 
@@ -125,6 +132,7 @@ def openGUI():
     option_network = StringVar()
     option_graph = StringVar()
     option_factor = StringVar()
+    option_factor2 = StringVar
 
     #setting defaults
     option_network.set("SCSE")
@@ -135,24 +143,32 @@ def openGUI():
     network = [
         "SCSE",
         "Coauthor",
-        "Institutions"
+        "Faculty Comparisons"
         ]
 
     #options for factors
     factor = [
-        "Prestige",
-        "Location"
+        "position",
+        "management",
+        "area"
         ]
 
     #options for questions, will be changed accordingly
     measures = [
-        "Degree Distribution"
+        "Degree Distribution",
+        "Publication Distribution",
+        "Reputation Distribution",
+        "Reputation Degree",
+        "Maximum Degree Change"
         ]
     measures1 = [
         "Degree Distribution"
         ]
     measures2 = [
-        "Correlation to authors who publish in premium venues"
+        "Professor",
+        "Associate Professor",
+        "Assistant Professor",
+        "Lecturer"
         ]
     measures3 = [
         "Role in success of a Data Scientist"
@@ -170,6 +186,9 @@ def openGUI():
     dropdown_factor = OptionMenu(root, option_factor,"Not Applicable")
     dropdown_factor.place(x=100,y=55)
 
+    #Displays factor dropdown menu
+    dropdown_factor2 = OptionMenu(root, option_factor2,"Not Applicable")
+    dropdown_factor2.place(x=300,y=55)
 
     #Button to confirm and show, defined at the top
     btnConfirm = Button(root, text="Show Graph/Findings", command= lambda : show(btnConfirm))

@@ -89,6 +89,10 @@ def filterGraphs(graph, filterby, rank1, rank2 = None):
     subGraph = graph.subgraph(filteredNodes).copy()
     return subGraph
 
+def compareFiltered(graph, filterby, rank1, rank2=None):
+    subGraph = filterGraphs(graph, filterby, rank1, rank2)
+    nx.draw_kamada_kawai(subGraph,with_labels=True)
+
 def FilterScseNodes(scseGraph, startyear, endyear):
     filteredNodes = []
 
