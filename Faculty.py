@@ -4,7 +4,9 @@ import json
 #load library
 import networkx as nx
 import numpy as np
+import matplotlib.pyplot
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import figure
 import pandas as pd
 #load configs
 import configs as cfg
@@ -91,7 +93,11 @@ def filterGraphs(graph, filterby, rank1, rank2 = None):
 
 def compareFiltered(graph, filterby, rank1, rank2=None):
     subGraph = filterGraphs(graph, filterby, rank1, rank2)
-    nx.draw_kamada_kawai(subGraph,with_labels=True)
+    f = plt.figure(figsize=(5, 5), dpi=100)
+    a = f.add_subplot(111)
+    nx.draw_kamada_kawai(subGraph,with_labels=True, ax=a)
+    return f
+
 
 def FilterScseNodes(scseGraph, startyear, endyear):
     filteredNodes = []

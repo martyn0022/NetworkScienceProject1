@@ -1,7 +1,13 @@
+import tkinter as Tk
 from tkinter import *
 from tkinter import ttk
 import numpy as np
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import (
+    FigureCanvasTkAgg, NavigationToolbar2Tk)
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import figure
 from Faculty import *
 from Faculty import Networks
 
@@ -19,6 +25,22 @@ def openDF(df):
     for index, row in df.iterrows():
         tree.insert("",0,text=index,values=list(row))
     df_window.mainloop()
+
+def drawNetworkx(figure):
+    Netw = Tk()
+    Netw.wm_title("Network")
+    #f = plt.Figure(figsize=(5,4), dpi=100)
+    #a = f.add_subplot(111)
+    #a.plot([1,2,3,4,5],[3,2,1,3,4])
+    #nx.draw_kamada_kawai(figure,with_labels=True, ax=a)
+    canvas = FigureCanvasTkAgg(figure, master=Netw)
+    canvas.draw()
+    canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=True)
+    #toolbar = NavigationToolbar2Tk(canvas, Netw)
+    #toolbar.update()
+    #canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+    Netw.mainloop()
+
 
 def openGUI():
     #Defining the Tkinter Window
@@ -55,8 +77,9 @@ def openGUI():
 
 
         elif option_network.get() == "Faculty Comparisons":
+            isGraph =0
             if option_factor.get() == "position":
-                filter = 'management'
+                filter = 'position'
                 if option_graph.get() == "Professor":
                     rank1 = "Professor"
                 elif option_graph.get() == "Associate Professor":
@@ -66,16 +89,22 @@ def openGUI():
                 elif option_graph.get() == "Lecturer":
                     rank1 = "Lecturer"
 
+
             elif option_factor.get() == "management":
                 filter = 'position'
             elif option_factor.get() == "area":
                 filter = 'area'
+            isGraph = 0
+            graph = compareFiltered(data.GetScseNetwork(), filter,rank1)
 
-            graph = compareFiltered(data.GetScseNetwork(), filter,rank1,rank2)
 
         btn.config(state = 'normal')
         if isGraph:
             graph.show()
+        else:
+            drawNetworkx(graph)
+
+
 
 
     #to update the options based on previous options
