@@ -78,6 +78,9 @@ def openGUI():
 
         elif option_network.get() == "Faculty Comparisons":
             isGraph =0
+            rank2 = None
+
+            # filter by position
             if option_factor.get() == "position":
                 filter = 'position'
                 if option_graph.get() == "Professor":
@@ -89,13 +92,46 @@ def openGUI():
                 elif option_graph.get() == "Lecturer":
                     rank1 = "Lecturer"
 
+                if option_graph2.get() == "None":
+                    rank2 = None
+                elif option_graph2.get() == "Professor":
+                    rank2 = "Professor"
+                elif option_graph2.get() == "Associate Professor":
+                    rank2 = "Associate Professor"
+                elif option_graph2.get() == "Assistant Professor":
+                    rank2 = "Assistant Professor"
+                elif option_graph2.get() == "Lecturer":
+                    rank2 = "Lecturer"
 
+
+
+            # filter by management
             elif option_factor.get() == "management":
-                filter = 'position'
+                filter = 'management'
+                if option_graph.get() == "Y":
+                    rank1 = "Y"
+                elif option_graph.get() == "N":
+                    rank1 = "N"
+                if option_graph2.get() == "Y":
+                    rank2 = "Y"
+                elif option_graph2.get() == "N":
+                    rank2 = "N"
+
+            # filter by area of discipline
             elif option_factor.get() == "area":
-                filter = 'area'
+                    filter = 'area'
+                    for option in measures4:
+                        if option_graph.get() == option:
+                            rank1 = option
+
+                    if option_graph2.get() == "None":
+                        rank2 = None
+                    for option in measures4:
+                        if option_graph2.get() == option:
+                            rank2 = option
+
             isGraph = 0
-            graph = compareFiltered(data.GetScseNetwork(), filter,rank1)
+            graph = compareFiltered(data.GetScseNetwork(), filter,rank1,rank2)
 
 
         btn.config(state = 'normal')
@@ -113,6 +149,10 @@ def openGUI():
             option_graph.set("Degree Distribution")
             dropdown_graph = OptionMenu(root, option_graph, *measures)
             dropdown_graph.place(x=100,y=95)
+            option_graph2.set("Not Applicable")
+            dropdown_graph2 = OptionMenu(root, option_graph2, "Not Applicable")
+            dropdown_graph2.place(x=300,y=95)
+
 
             if option_factor.get() != "Not Applicable":
                 option_factor.set("Not Applicable")
@@ -122,13 +162,17 @@ def openGUI():
             option_graph.set("Degree Distribution")
             dropdown_graph = OptionMenu(root, option_graph, *measures1)
             dropdown_graph.place(x=100,y=95)
+            option_graph2.set("Not Applicable")
+            dropdown_graph2 = OptionMenu(root, option_graph2, "Not Applicable")
+            dropdown_graph2.place(x=300,y=95)
 
             if option_factor.get() != "Not Applicable":
                 option_factor.set("Not Applicable")
                 dropdown_factor = OptionMenu(root, option_factor,"Not Applicable")
                 dropdown_factor.place(x=100,y=55)
+
         elif option_network.get() == "Faculty Comparisons":
-            option_factor.set("management")
+            option_factor.set("position")
             dropdown_factor = OptionMenu(root, option_factor, *factor,command = update)
             dropdown_factor.place(x=100,y=55)
             update()
@@ -139,11 +183,25 @@ def openGUI():
             option_graph.set("Professor")
             dropdown_graph = OptionMenu(root, option_graph, *measures2)
             dropdown_graph.place(x=100,y=95)
+            option_graph2.set("None")
+            dropdown_graph2 = OptionMenu(root, option_graph2, *measures2)
+            dropdown_graph2.place(x=300,y=95)
 
-        elif option_factor.get() == "Location":
-            option_graph.set("Role in success of a Data Scientist")
+        elif option_factor.get() == "management":
+            option_graph.set("Y")
             dropdown_graph = OptionMenu(root, option_graph, *measures3)
             dropdown_graph.place(x=100,y=95)
+            option_graph2.set("None")
+            dropdown_graph2 = OptionMenu(root, option_graph2, *measures3)
+            dropdown_graph2.place(x=300,y=95)
+
+        elif option_factor.get() == "area":
+            option_graph.set("Data Management")
+            dropdown_graph = OptionMenu(root, option_graph, *measures4)
+            dropdown_graph.place(x=100,y=95)
+            option_graph2.set("None")
+            dropdown_graph2 = OptionMenu(root, option_graph2, *measures4)
+            dropdown_graph2.place(x=300,y=95)
 
 
     #Labelling
@@ -161,12 +219,14 @@ def openGUI():
     option_network = StringVar()
     option_graph = StringVar()
     option_factor = StringVar()
-    option_factor2 = StringVar
+    option_graph2 = StringVar()
 
     #setting defaults
     option_network.set("SCSE")
     option_graph.set("Degree Distribution")
     option_factor.set("Not Applicable")
+    option_graph2.set("Not Applicable")
+
 
     #options for networkgraphs
     network = [
@@ -194,14 +254,32 @@ def openGUI():
         "Degree Distribution"
         ]
     measures2 = [
+        "None",
         "Professor",
         "Associate Professor",
         "Assistant Professor",
         "Lecturer"
         ]
     measures3 = [
-        "Role in success of a Data Scientist"
+        "Y",
+        "N"
         ]
+    measures4 = [
+        "Data Management",
+        "Data Mining",
+        "Information Retrieval",
+        "Computer Vision",
+        "AI/ML",
+        "Computer Networks",
+        "Cyber Security",
+        "Software Engineering",
+        "Computer Architecture",
+        "HCI",
+        "Distributed Systems",
+        "Computer Graphics",
+        "Bioinformatics",
+        "Multimedia"
+    ]
 
     #Displays network dropdown menu
     dropdown_network = OptionMenu(root, option_network, *network,command = update_next)
@@ -216,8 +294,8 @@ def openGUI():
     dropdown_factor.place(x=100,y=55)
 
     #Displays factor dropdown menu
-    dropdown_factor2 = OptionMenu(root, option_factor2,"Not Applicable")
-    dropdown_factor2.place(x=300,y=55)
+    dropdown_graph2 = OptionMenu(root, option_graph2,"Not Applicable")
+    dropdown_graph2.place(x=300,y=95)
 
     #Button to confirm and show, defined at the top
     btnConfirm = Button(root, text="Show Graph/Findings", command= lambda : show(btnConfirm))

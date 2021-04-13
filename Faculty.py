@@ -93,9 +93,20 @@ def filterGraphs(graph, filterby, rank1, rank2 = None):
 
 def compareFiltered(graph, filterby, rank1, rank2=None):
     subGraph = filterGraphs(graph, filterby, rank1, rank2)
-    f = plt.figure(figsize=(5, 5), dpi=100)
+    colormap = []
+    if rank2:
+        for node in subGraph.nodes.data():
+            if node[1][filterby] == rank1:
+                colormap.append('blue')
+            else:
+                colormap.append('green')
+    else:
+        for node in subGraph.nodes.data():
+            if node[1][filterby] == rank1:
+                colormap.append("blue")
+    f = plt.figure(figsize=(10, 10), dpi=100)
     a = f.add_subplot(111)
-    nx.draw_kamada_kawai(subGraph,with_labels=True, ax=a)
+    nx.draw_kamada_kawai(subGraph,with_labels=False, ax=a, node_color=colormap)
     return f
 
 
