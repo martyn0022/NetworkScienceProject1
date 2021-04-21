@@ -77,7 +77,7 @@ class Networks:
 #rank(management): "Y" , "N"
 #position: "Professor" , "Associate Professor" , "Assistant Professor", "Lecturer"
 """
-def filterGraphs(graph, filterby, rank1, rank2 = None):
+def filterGraphs(graph, filterby, rank1, rank2=None):
     filteredNodes= []
     if rank2:
         for node in graph.nodes.data():
@@ -106,6 +106,7 @@ def compareFiltered(graph, filterby, rank1, rank2=None):
                 colormap.append("blue")
     f = plt.figure(figsize=(10, 10), dpi=100)
     a = f.add_subplot(111)
+
     nx.draw_kamada_kawai(subGraph,with_labels=False, ax=a, node_color=colormap)
     return f
 
